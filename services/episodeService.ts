@@ -1,0 +1,51 @@
+import { Episode, EpisodeExtended } from '../models';
+import { DatabaseService } from './databaseService';
+
+type FilterId = 'recent' | 'inProgress';
+
+export class EpisodeService {
+    private dbService = new DatabaseService();
+
+    public async getById(episodeId: number): Promise<Episode> {
+        return this.dbService.getEpisodeById(episodeId);
+    }
+
+    public async updateEpisode(episodeId: number, changes: any): Promise<void> {
+        try {
+            await this.dbService.updateEpisode(episodeId, changes);
+        } catch (err) {
+            console.error(`Error updating episode ${episodeId}`, err);
+        }
+    }
+
+    public async getByPodcastId(podcastId: number): Promise<EpisodeExtended[]> {
+        const podcast = await this.dbService.getPodcastById(podcastId);
+        const episodes = await this.dbService.getEpisodesByPodcast(podcastId);
+
+        return episodes.map(episode => ({
+            ...episode,
+            cover: podcast.cover,
+            podcastTitle: podcast.title
+        }));
+    }
+
+    public async getByFilter(filterId: FilterId): Promise<EpisodeExtended[]> {
+        const podcastDetail = await this.dbService.getPodcasts().then(podcasts => {
+            return podcasts.reduce((coverMap: any, podcast) => {
+                coverMap[podcast.id] = {
+                    title: podcast.title,
+                    cover: podcast.cover
+                };
+                return coverMap;
+            }, {});
+        });
+
+        const episodes = await this.dbService.getEpisodesByFilter(filterId);
+
+        return episodes.map(episode => ({
+            ...episode,
+            cover: podcastDetail[episode.podcastId].cover,
+            podcastTitle: podcastDetail[episode.podcastId].title
+        }));
+    }
+}
