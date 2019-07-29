@@ -1,4 +1,4 @@
-const formatTime = (rawSeconds: number) => {
+export const formatTime = (rawSeconds: number) => {
     let isNegative = false;
 
     if (rawSeconds < 0) {
@@ -17,5 +17,3 @@ const formatTime = (rawSeconds: number) => {
 
     return isNegative ? `-${time}` : time;
 };
-
-export default formatTime;

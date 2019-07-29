@@ -2,13 +2,20 @@
   "name": "foxcasts-core",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "testing": "dist/models"
+  },
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Garrett Downs",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^12.6.8",
+    "jest": "^24.8.0",
     "prettier": "^1.18.2",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",

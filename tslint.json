@@ -47,5 +47,6 @@
             "options": "allow-destructuring"
         },
         "prefer-const-enum": { "severity": "warning" }
-    }
+    },
+    "linterOptions": { "exclude": ["node_modules/**"] }
 }

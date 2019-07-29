@@ -1,6 +1,6 @@
 import { ITunesPodcast, Podcast } from '../models';
 
-const formatPodcast = (rawPodcast: ITunesPodcast): Podcast => {
+export const formatPodcast = (rawPodcast: ITunesPodcast): Podcast => {
     return {
         id: rawPodcast.collectionId,
         authorId: rawPodcast.artistId,
@@ -17,5 +17,3 @@ const formatPodcast = (rawPodcast: ITunesPodcast): Podcast => {
         feedUrl: rawPodcast.feedUrl
     };
 };
-
-export default formatPodcast;

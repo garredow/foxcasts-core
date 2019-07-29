@@ -1,5 +1,5 @@
 import { Episode, Podcast } from '../models';
-import formatPodcast from '../utils/formatPodcast';
+import { formatPodcast } from '../utils';
 
 interface HttpClient {
     get: (url: string, contentType?: string) => Promise<any>;
