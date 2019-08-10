@@ -5,7 +5,7 @@ interface HttpClient {
     get: (url: string, contentType?: string) => Promise<any>;
 }
 
-const getDurationInSeconds = (duration: string) => {
+const getDurationInSeconds = (duration: string | number) => {
     if (typeof duration === 'number') {
         return duration;
     }
@@ -58,9 +58,7 @@ const parseXmlEpisodes = (xmlString: string): Episode[] => {
                 subTitle: subTitleNode && subTitleNode.textContent,
                 description: descriptionNode && descriptionNode.textContent,
                 fileSize: parseInt(
-                    rawEpisode
-                        .getElementsByTagName('enclosure')[0]
-                        .getAttribute('length') as string,
+                    rawEpisode.getElementsByTagName('enclosure')[0].getAttribute('length')!,
                     10
                 ),
                 type: rawEpisode.getElementsByTagName('enclosure')[0].getAttribute('type'),
@@ -76,7 +74,7 @@ const parseXmlEpisodes = (xmlString: string): Episode[] => {
     return episodes;
 };
 
-const kaiHttpClient = {
+const defaultHttpClient: HttpClient = {
     get: (url: string, contentType = 'application/json') => {
         const fullUrl =
             process.env.NODE_ENV === 'development'
@@ -95,7 +93,6 @@ const kaiHttpClient = {
                         ? JSON.parse(xmlhttp.response)
                         : xmlhttp.response;
 
-                // console.log('xmlhttp result', result);
                 resolve(result);
             });
             xmlhttp.addEventListener('error', () => reject(`Failed to GET ${url}`));
@@ -115,8 +112,8 @@ interface GetEpisodesOptions {
 export class ApiService {
     private client: HttpClient;
 
-    constructor() {
-        this.client = kaiHttpClient;
+    constructor(httpClient?: HttpClient) {
+        this.client = httpClient || defaultHttpClient;
     }
 
     public async search(query: string, { numResults = 25 } = {}) {
@@ -131,7 +128,7 @@ export class ApiService {
 
     public async getEpisodes(
         feedUrl: string,
-        { numResults = 30, afterDate }: GetEpisodesOptions = {}
+        { numResults = 25, afterDate }: GetEpisodesOptions = {}
     ): Promise<Episode[]> {
         return this.client
             .get(feedUrl, 'text/xml')
