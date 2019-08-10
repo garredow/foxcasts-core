@@ -6,8 +6,15 @@ type FilterId = 'recent' | 'inProgress';
 export class EpisodeService {
     private dbService = new DatabaseService();
 
-    public async getById(episodeId: number): Promise<Episode> {
-        return this.dbService.getEpisodeById(episodeId);
+    public async getById(episodeId: number): Promise<EpisodeExtended> {
+        const episode = await this.dbService.getEpisodeById(episodeId);
+        const podcast = await this.dbService.getPodcastById(episode.podcastId);
+
+        return {
+            ...episode,
+            cover: podcast.cover,
+            podcastTitle: podcast.title
+        };
     }
 
     public async updateEpisode(episodeId: number, changes: any): Promise<void> {
