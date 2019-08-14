@@ -18,11 +18,7 @@ export class EpisodeService {
     }
 
     public async updateEpisode(episodeId: number, changes: any): Promise<void> {
-        try {
-            await this.dbService.updateEpisode(episodeId, changes);
-        } catch (err) {
-            console.error(`Error updating episode ${episodeId}`, err);
-        }
+        await this.dbService.updateEpisode(episodeId, changes);
     }
 
     public async getByPodcastId(podcastId: number): Promise<EpisodeExtended[]> {
