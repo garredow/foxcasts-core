@@ -1,7 +1,5 @@
-import { Episode, EpisodeExtended } from '../models';
+import { Episode, EpisodeExtended, EpisodeFilterId } from '../models';
 import { DatabaseService } from './databaseService';
-
-type FilterId = 'recent' | 'inProgress';
 
 export class EpisodeService {
     private dbService = new DatabaseService();
@@ -32,7 +30,7 @@ export class EpisodeService {
         }));
     }
 
-    public async getByFilter(filterId: FilterId): Promise<EpisodeExtended[]> {
+    public async getByFilter(filterId: EpisodeFilterId): Promise<EpisodeExtended[]> {
         const podcastDetail = await this.dbService.getPodcasts().then(podcasts => {
             return podcasts.reduce((coverMap: any, podcast) => {
                 coverMap[podcast.id] = {
