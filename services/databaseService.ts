@@ -1,5 +1,5 @@
 import Dexie from 'dexie';
-import { Episode, EpisodeExtended, Podcast } from '../models';
+import { Episode, EpisodeExtended, EpisodeFilterId, Podcast } from '../models';
 
 export class DatabaseService {
     private db: Dexie;
@@ -129,16 +129,16 @@ export class DatabaseService {
             );
     }
 
-    public async getEpisodesByFilter(filterId: string): Promise<EpisodeExtended[]> {
-        // const podcastCovers = await this.getPodcasts().then(podcasts => {
-        //     return podcasts.reduce((coverMap: any, podcast) => {
-        //         coverMap[podcast.id] = {
-        //             title: podcast.title,
-        //             cover: podcast.cover
-        //         };
-        //         return coverMap;
-        //     }, {});
-        // });
+    public async getEpisodesByFilter(filterId: EpisodeFilterId): Promise<EpisodeExtended[]> {
+        const podcastCovers = await this.getPodcasts().then(podcasts => {
+            return podcasts.reduce((coverMap: any, podcast) => {
+                coverMap[podcast.id] = {
+                    title: podcast.title,
+                    cover: podcast.cover
+                };
+                return coverMap;
+            }, {});
+        });
 
         let episodes = [];
 
@@ -164,13 +164,11 @@ export class DatabaseService {
                 break;
         }
 
-        return episodes;
-
-        // return episodes.map(episode => ({
-        //     ...episode,
-        //     cover: podcastCovers[episode.podcastId].cover,
-        //     podcastTitle: podcastCovers[episode.podcastId].title
-        // }));
+        return episodes.map(episode => ({
+            ...episode,
+            cover: podcastCovers[episode.podcastId].cover,
+            podcastTitle: podcastCovers[episode.podcastId].title
+        }));
     }
 
     public async updateEpisode(episodeId: number, changes: any): Promise<Episode> {
