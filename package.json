@@ -4,33 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ts-mocha **/*.test.ts",
-    "commit": "npx git-cz"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garredow/foxcasts-core.git"
   },
   "author": "Garrett Downs",
   "license": "ISC",
-  "devDependencies": {
-    "@types/chai": "^4.2.0",
-    "@types/expect": "^1.20.4",
-    "@types/mocha": "^5.2.7",
-    "chai": "^4.2.0",
-    "cz-conventional-changelog": "^3.0.2",
-    "mocha": "^6.2.0",
-    "prettier": "^1.18.2",
-    "ts-mocha": "^6.0.0",
-    "tslint": "^5.18.0",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-consistent-codestyle": "^1.15.1",
-    "tslint-eslint-rules": "^5.4.0",
-    "typescript": "^3.5.3"
+  "bugs": {
+    "url": "https://github.com/garredow/foxcasts-core/issues"
   },
-  "dependencies": {
-    "dexie": "^2.0.4",
-    "dotenv": "^8.0.0"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  }
+  "homepage": "https://github.com/garredow/foxcasts-core#readme"
 }
