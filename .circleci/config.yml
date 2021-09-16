@@ -1,0 +1,72 @@
+version: 2.1
+executors:
+  node-lts:
+    docker:
+      - image: cimg/node:lts
+
+jobs:
+  install:
+    executor: node-lts
+    steps:
+      - checkout
+      - run: npm ci
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./*
+  build:
+    executor: node-lts
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: npm run build
+  test:
+    executor: node-lts
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          command: npm run test:ci
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
+      - store_test_results:
+          path: ./reports/junit/
+      - store_artifacts:
+          path: ./reports/junit
+      - store_artifacts:
+          path: coverage
+  version:
+    executor: node-lts
+    steps:
+      - attach_workspace:
+          at: .
+      - run: |
+          echo "" > old_version && echo "" > new_version
+          npx semantic-release -d
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - old_version
+            - new_version
+
+workflows:
+  build-test-deploy:
+    jobs:
+      - install
+      - build:
+          requires:
+            - install
+      - test:
+          requires:
+            - install
+      - version:
+          context: github-versioning
+          requires:
+            - build
+            - test
+          filters:
+            branches:
+              only:
+                - main
+                - cicd
