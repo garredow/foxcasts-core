@@ -36,19 +36,12 @@ jobs:
           path: ./reports/junit
       - store_artifacts:
           path: coverage
-  version:
+  version-and-publish:
     executor: node-lts
     steps:
       - attach_workspace:
           at: .
-      - run: |
-          echo "" > old_version && echo "" > new_version
-          npx semantic-release -d
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - old_version
-            - new_version
+      - run: npx semantic-release -d
 
 workflows:
   build-test-deploy:
@@ -60,7 +53,7 @@ workflows:
       - test:
           requires:
             - install
-      - version:
+      - version-and-publish:
           context:
             - github-versioning
             - npm-publishing
