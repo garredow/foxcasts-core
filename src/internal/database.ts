@@ -15,8 +15,8 @@ class FoxcastsDB extends Dexie {
   podcasts: Dexie.Table<Podcast, number>;
   episodes: Dexie.Table<Episode, number>;
 
-  constructor() {
-    super('foxcasts');
+  constructor(name: string) {
+    super(name);
 
     this.version(databaseVersion).stores({
       podcasts: '++id, &feedUrl, &podexId, itunesId',
@@ -29,11 +29,17 @@ class FoxcastsDB extends Dexie {
   }
 }
 
-export class DatabaseService {
+type DatabaseConfig = {
+  dbName: string;
+};
+
+export class Database {
+  private config: DatabaseConfig;
   private db: FoxcastsDB;
 
-  constructor() {
-    this.db = new FoxcastsDB();
+  constructor(config: DatabaseConfig) {
+    this.config = config;
+    this.db = new FoxcastsDB(this.config.dbName);
   }
 
   //#region Podcasts
@@ -267,4 +273,22 @@ export class DatabaseService {
   }
 
   //#endregion
+
+  public async health() {
+    let healthy = true;
+    const podcastsCount = await this.db.podcasts.count().catch(() => {
+      healthy = false;
+    });
+    const episodesCount = await this.db.episodes.count().catch(() => {
+      healthy = false;
+    });
+
+    return {
+      healthy,
+      name: this.db.name,
+      version: this.db.verno,
+      podcastsCount,
+      episodesCount,
+    };
+  }
 }

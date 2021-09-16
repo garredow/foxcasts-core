@@ -1,5 +1,3 @@
-import podcastService from './services/podcasts';
-import apiService from './services/api';
 import {
   Podcast,
   EpisodeExtended,
@@ -8,152 +6,160 @@ import {
   SearchResult,
   ApiPodcast,
   ApiEpisode,
-  Status,
+  Health,
 } from './types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json');
-import { databaseVersion } from './services/database';
-import { Config, setConfig } from './utils/config';
+import { Podcasts } from './internal/podcasts';
+import { Episodes } from './internal/episodes';
+import { Api } from './internal/api';
+import { Database } from './internal/database';
 
-// Meta
-
-function configure(config: Partial<Config>): Config {
-  return setConfig(config);
-}
-
-async function getStatus(): Promise<Status> {
-  const apiHealth = await apiService.getHealth().catch(() => null);
-
-  return {
-    version: pkg.version,
-    apiStatus: apiHealth ? 'ok' : 'error',
-    apiVersion: apiHealth?.version,
-    databaseVersion,
-  };
-}
-
-// Podcasts
-
-function subscribeByPodexId(podexId: number): Promise<void> {
-  return podcastService.subscribeByPodexId(podexId);
-}
-
-function subscribeByFeedUrl(feedUrl: string): Promise<void> {
-  return podcastService.subscribeByFeed(feedUrl);
-}
-
-function unsubscribe(podcastId: number): Promise<void> {
-  return podcastService.unsubscribe(podcastId);
-}
-
-function unsubscribeByPodexId(podexId: number): Promise<void> {
-  return podcastService.unsubscribeByPodexId(podexId);
-}
-
-function unsubscribeByFeedUrl(feedUrl: string): Promise<void> {
-  return podcastService.unsubscribeByFeed(feedUrl);
-}
-
-function getPodcasts(): Promise<Podcast[]> {
-  return podcastService.getAllPodcasts();
-}
-
-function getPodcastById(podcastId: number): Promise<Podcast> {
-  return podcastService.getPodcastById(podcastId);
-}
-
-function getPodcastByPodexId(podexId: number): Promise<Podcast> {
-  return podcastService.getPodcastByPodexId(podexId);
-}
-
-function getPodcastByFeedUrl(feedUrl: string): Promise<Podcast> {
-  return podcastService.getPodcastByFeed(feedUrl);
-}
-
-function checkForUpdates(): Promise<void> {
-  return podcastService.checkForUpdates();
-}
-
-// Episodes
-
-function getEpisodeById(episodeId: number): Promise<EpisodeExtended> {
-  return podcastService.getEpisodeById(episodeId);
-}
-
-function getEpisodesByPodcastId(
-  podcastId: number,
-  limit = 30,
-  offset = 0
-): Promise<EpisodeExtended[]> {
-  return podcastService.getEpisodesByPodcastId(podcastId, limit, offset);
-}
-
-function getEpisodesByFilter(
-  filterId: EpisodeFilterId,
-  limit = 30
-): Promise<EpisodeExtended[]> {
-  return podcastService.getEpisodesByFilter(filterId, limit);
-}
-
-function getEpisodeChapters(
-  episodeId: number,
-  podexId: number | null,
-  fileUrl?: string,
-  forceRefresh = false
-): Promise<Chapter[]> {
-  return podcastService.getEpisodeChapters(
-    episodeId,
-    podexId,
-    fileUrl,
-    forceRefresh
-  );
-}
-
-// Fetch remote data
-
-function searchPodcasts(query: string): Promise<SearchResult[]> {
-  return apiService.search(query);
-}
-
-function fetchPodcast(
-  id?: number | null,
-  feedUrl?: string | null
-): Promise<ApiPodcast> {
-  return apiService.getPodcast(id, feedUrl);
-}
-
-function fetchEpisodes(
-  podcastId?: number | null,
-  feedUrl?: string | null,
-  count = 25,
-  since?: string
-): Promise<ApiEpisode[]> {
-  return apiService.getEpisodes(podcastId, feedUrl, count, since);
-}
-
-function fetchArtwork(imageUrl: string, size = 100): Promise<string> {
-  return apiService.getArtwork(imageUrl, size);
-}
-
-export default {
-  configure,
-  getStatus,
-  subscribeByPodexId,
-  subscribeByFeedUrl,
-  unsubscribe,
-  unsubscribeByPodexId,
-  unsubscribeByFeedUrl,
-  getPodcasts,
-  getPodcastById,
-  getPodcastByPodexId,
-  getPodcastByFeedUrl,
-  checkForUpdates,
-  getEpisodeById,
-  getEpisodesByPodcastId,
-  getEpisodesByFilter,
-  getEpisodeChapters,
-  searchPodcasts,
-  fetchPodcast,
-  fetchEpisodes,
-  fetchArtwork,
+export type CoreConfig = {
+  baseUrl: string;
+  apiKey?: string;
+  dbName: string;
 };
+
+export class FoxcastsCore {
+  private config: CoreConfig;
+  private podcasts: Podcasts;
+  private episodes: Episodes;
+  private api: Api;
+  private db: Database;
+  public static version = pkg.version;
+
+  constructor(options: Partial<CoreConfig>) {
+    this.config = {
+      apiKey: undefined,
+      baseUrl: 'https://api.foxcasts.com/',
+      dbName: 'foxcasts',
+      ...options,
+    };
+
+    this.db = new Database(this.config);
+    this.podcasts = new Podcasts(this.config, this.db);
+    this.episodes = new Episodes(this.config, this.db);
+    this.api = new Api(this.config);
+  }
+
+  // Podcasts
+
+  public subscribeByPodexId(podexId: number): Promise<void> {
+    return this.podcasts.subscribeByPodexId(podexId);
+  }
+
+  public subscribeByFeedUrl(feedUrl: string): Promise<void> {
+    return this.podcasts.subscribeByFeed(feedUrl);
+  }
+
+  public unsubscribe(podcastId: number): Promise<void> {
+    return this.podcasts.unsubscribe(podcastId);
+  }
+
+  public unsubscribeByPodexId(podexId: number): Promise<void> {
+    return this.podcasts.unsubscribeByPodexId(podexId);
+  }
+
+  public unsubscribeByFeedUrl(feedUrl: string): Promise<void> {
+    return this.podcasts.unsubscribeByFeed(feedUrl);
+  }
+
+  public getPodcasts(): Promise<Podcast[]> {
+    return this.podcasts.getAllPodcasts();
+  }
+
+  public getPodcastById(podcastId: number): Promise<Podcast> {
+    return this.podcasts.getPodcastById(podcastId);
+  }
+
+  public getPodcastByPodexId(podexId: number): Promise<Podcast> {
+    return this.podcasts.getPodcastByPodexId(podexId);
+  }
+
+  public getPodcastByFeedUrl(feedUrl: string): Promise<Podcast> {
+    return this.podcasts.getPodcastByFeed(feedUrl);
+  }
+
+  public checkForUpdates(): Promise<void> {
+    return this.podcasts.checkForUpdates();
+  }
+
+  // Episodes
+
+  public getEpisodeById(episodeId: number): Promise<EpisodeExtended> {
+    return this.episodes.getEpisodeById(episodeId);
+  }
+
+  public getEpisodesByPodcastId(
+    podcastId: number,
+    limit = 30,
+    offset = 0
+  ): Promise<EpisodeExtended[]> {
+    return this.episodes.getEpisodesByPodcastId(podcastId, limit, offset);
+  }
+
+  public getEpisodesByFilter(
+    filterId: EpisodeFilterId,
+    limit = 30
+  ): Promise<EpisodeExtended[]> {
+    return this.episodes.getEpisodesByFilter(filterId, limit);
+  }
+
+  public getEpisodeChapters(
+    episodeId: number,
+    podexId: number | null,
+    fileUrl?: string,
+    forceRefresh = false
+  ): Promise<Chapter[]> {
+    return this.episodes.getEpisodeChapters(
+      episodeId,
+      podexId,
+      fileUrl,
+      forceRefresh
+    );
+  }
+
+  // Fetch remote data
+
+  public searchPodcasts(query: string): Promise<SearchResult[]> {
+    return this.api.search(query);
+  }
+
+  public fetchPodcast(
+    id?: number | null,
+    feedUrl?: string | null
+  ): Promise<ApiPodcast> {
+    return this.api.getPodcast(id, feedUrl);
+  }
+
+  public fetchEpisodes(
+    podcastId?: number | null,
+    feedUrl?: string | null,
+    count = 25,
+    since?: string
+  ): Promise<ApiEpisode[]> {
+    return this.api.getEpisodes(podcastId, feedUrl, count, since);
+  }
+
+  public fetchArtwork(imageUrl: string, size = 100): Promise<string> {
+    return this.api.getArtwork(imageUrl, size);
+  }
+
+  // Meta
+
+  public async health(): Promise<Health> {
+    const api = await this.api.health();
+    const database = await this.db.health();
+
+    return {
+      healthy: [api.healthy, api.authenticated, database.healthy].every(
+        (a) => a === true
+      ),
+      version: pkg.version,
+      api,
+      database,
+      config: this.config,
+    };
+  }
+}

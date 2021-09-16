@@ -9,4 +9,4 @@ export * from './ApiEpisode';
 export * from './ApiPodcast';
 export * from './ApiHealth';
 export * from './Chapter';
-export * from './Status';
+export * from './Health';
