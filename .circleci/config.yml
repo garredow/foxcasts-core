@@ -41,7 +41,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: npx semantic-release -d
+      - run: npx semantic-release
 
 workflows:
   build-test-deploy:
@@ -64,4 +64,3 @@ workflows:
             branches:
               only:
                 - main
-                - cicd
