@@ -61,7 +61,9 @@ workflows:
           requires:
             - install
       - version:
-          context: github-versioning
+          context:
+            - github-versioning
+            - npm-publishing
           requires:
             - build
             - test
