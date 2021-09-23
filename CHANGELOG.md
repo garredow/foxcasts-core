@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/garredow/foxcasts-core/compare/v1.0.0...v1.1.0) (2021-09-23)
+
+
+### Features
+
+* add updateEpisode, fetchTrendingPodcasts, fetchCategories, and fetchPIStats ([ffc2979](https://github.com/garredow/foxcasts-core/commit/ffc2979783baf1504c1730d67731e2679bcfd627))
+
 # 1.0.0 (2021-09-16)
 
 
