@@ -2,7 +2,9 @@ import {
   ApiEpisode,
   ApiHealth,
   ApiPodcast,
+  Category,
   Chapter,
+  PIStats,
   SearchResult,
 } from '../types';
 import { toBase64 } from '../utils';
@@ -67,6 +69,19 @@ export class Api {
     return this.fetch<SearchResult[]>(url).catch((err) => {
       console.log(`Failed to search at ${url}`, err);
       throw new Error('Failed to search.');
+    });
+  }
+
+  public getTrendingPodcasts(categories?: number[]): Promise<SearchResult[]> {
+    let url = `podcasts/trending`;
+
+    if (categories && categories.length > 0) {
+      url = url + `?categories=${categories?.join(',')}`;
+    }
+
+    return this.fetch<SearchResult[]>(url).catch((err) => {
+      console.log(`Failed to get trending podcasts at ${url}`, err);
+      throw new Error('Failed to get trending podcasts.');
     });
   }
 
@@ -152,6 +167,20 @@ export class Api {
         console.log(`Failed to get artwork at ${url}`, err);
         throw new Error('Failed to get artwork.');
       });
+  }
+
+  public getCategories(): Promise<Category[]> {
+    return this.fetch<Category[]>('categories').catch((err) => {
+      console.log(`Failed to get categories`, err);
+      throw new Error('Failed to get categories.');
+    });
+  }
+
+  public getStats(): Promise<PIStats> {
+    return this.fetch<PIStats>('pistats').catch((err) => {
+      console.log(`Failed to get stats`, err);
+      throw new Error('Failed to get stats.');
+    });
   }
 
   public getHealth(): Promise<ApiHealth> {

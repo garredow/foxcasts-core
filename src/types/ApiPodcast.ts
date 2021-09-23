@@ -8,4 +8,5 @@ export type ApiPodcast = {
   feedUrl: string;
   lastUpdated?: number;
   categories: string[];
+  trendScore?: number;
 };

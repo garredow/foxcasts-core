@@ -76,6 +76,13 @@ export class Episodes {
     );
   }
 
+  public updateEpisode(
+    episodeId: number,
+    data: Partial<Episode>
+  ): Promise<Episode> {
+    return this.database.updateEpisode(episodeId, data);
+  }
+
   public async getEpisodeChapters(
     episodeId: number,
     podexId: number | null,

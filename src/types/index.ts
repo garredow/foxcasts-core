@@ -10,3 +10,5 @@ export * from './ApiPodcast';
 export * from './ApiHealth';
 export * from './Chapter';
 export * from './Health';
+export * from './Category';
+export * from './PIStats';

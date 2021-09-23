@@ -7,6 +7,9 @@ import {
   ApiPodcast,
   ApiEpisode,
   Health,
+  Category,
+  PIStats,
+  Episode,
 } from './types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json');
@@ -106,6 +109,16 @@ export class FoxcastsCore {
     return this.episodes.getEpisodesByFilter(filterId, limit);
   }
 
+  public updateEpisode(
+    episodeId: number,
+    data: Partial<Episode>
+  ): Promise<Episode> {
+    // Make sure no ID is passed in
+    delete data.id;
+
+    return this.episodes.updateEpisode(episodeId, data);
+  }
+
   public getEpisodeChapters(
     episodeId: number,
     podexId: number | null,
@@ -126,6 +139,10 @@ export class FoxcastsCore {
     return this.api.search(query);
   }
 
+  public fetchTrendingPodcasts(categories?: number[]): Promise<SearchResult[]> {
+    return this.api.getTrendingPodcasts(categories);
+  }
+
   public fetchPodcast(
     id?: number | null,
     feedUrl?: string | null
@@ -144,6 +161,14 @@ export class FoxcastsCore {
 
   public fetchArtwork(imageUrl: string, size = 100): Promise<string> {
     return this.api.getArtwork(imageUrl, size);
+  }
+
+  public fetchCategories(): Promise<Category[]> {
+    return this.api.getCategories();
+  }
+
+  public fetchPIStats(): Promise<PIStats> {
+    return this.api.getStats();
   }
 
   // Meta

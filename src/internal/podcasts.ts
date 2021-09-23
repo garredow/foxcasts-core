@@ -15,8 +15,6 @@ export class Podcasts {
     this.database = database || new Database(this.config);
   }
 
-  // Podcasts
-
   public async subscribeByPodexId(podexId: number): Promise<void> {
     const existingSubscription = await this.database
       .getPodcastByPodexId(podexId)
