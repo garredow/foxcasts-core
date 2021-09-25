@@ -12,3 +12,4 @@ export * from './Chapter';
 export * from './Health';
 export * from './Category';
 export * from './PIStats';
+export * from './UpdateResult';

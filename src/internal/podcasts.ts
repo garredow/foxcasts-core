@@ -1,5 +1,5 @@
 import { CoreConfig } from '..';
-import { Podcast } from '../types';
+import { Podcast, UpdateResult } from '../types';
 import { NotFoundError } from '../utils/errors';
 import { Api } from './api';
 import { Database } from './database';
@@ -99,9 +99,13 @@ export class Podcasts {
     return await this.database.getPodcastByFeed(feedUrl);
   }
 
-  public async checkForUpdates(): Promise<void> {
+  public async checkForUpdates(): Promise<UpdateResult> {
     const podcastIds = (await this.getAllPodcasts()).map((o) => o.id);
 
+    const count = {
+      podcasts: 0,
+      episodes: 0,
+    };
     for (const podcastId of podcastIds) {
       const podcast = await this.getPodcastById(podcastId);
       if (!podcast) continue;
@@ -117,7 +121,7 @@ export class Podcasts {
         podcast.podexId,
         podcast.feedUrl,
         100,
-        latestEpisode.date
+        new Date(latestEpisode.date).valueOf()
       );
 
       if (newEpisodes.length === 0) {
@@ -125,6 +129,10 @@ export class Podcasts {
       }
 
       await this.database.addEpisodes(podcastId, newEpisodes);
+      count.podcasts += 1;
+      count.episodes += newEpisodes.length;
     }
+
+    return count;
   }
 }
