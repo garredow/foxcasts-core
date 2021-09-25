@@ -72,14 +72,17 @@ export class Api {
     });
   }
 
-  public getTrendingPodcasts(categories?: number[]): Promise<SearchResult[]> {
-    let url = `podcasts/trending`;
+  public getTrendingPodcasts(
+    since: number,
+    categories?: number[]
+  ): Promise<ApiPodcast[]> {
+    let url = `podcasts/trending?since=${since}`;
 
     if (categories && categories.length > 0) {
-      url = url + `?categories=${categories?.join(',')}`;
+      url = url + `&categories=${categories?.join(',')}`;
     }
 
-    return this.fetch<SearchResult[]>(url).catch((err) => {
+    return this.fetch<ApiPodcast[]>(url).catch((err) => {
       console.log(`Failed to get trending podcasts at ${url}`, err);
       throw new Error('Failed to get trending podcasts.');
     });
@@ -111,7 +114,7 @@ export class Api {
     podcastId?: number | null,
     feedUrl?: string | null,
     count = 25,
-    since?: string
+    since?: number
   ): Promise<ApiEpisode[]> {
     if (!podcastId && !feedUrl) {
       throw new Error('Must provide a podcastId or feedUrl');

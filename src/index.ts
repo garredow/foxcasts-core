@@ -10,6 +10,7 @@ import {
   Category,
   PIStats,
   Episode,
+  UpdateResult,
 } from './types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json');
@@ -84,7 +85,7 @@ export class FoxcastsCore {
     return this.podcasts.getPodcastByFeed(feedUrl);
   }
 
-  public checkForUpdates(): Promise<void> {
+  public checkForUpdates(): Promise<UpdateResult> {
     return this.podcasts.checkForUpdates();
   }
 
@@ -139,8 +140,11 @@ export class FoxcastsCore {
     return this.api.search(query);
   }
 
-  public fetchTrendingPodcasts(categories?: number[]): Promise<SearchResult[]> {
-    return this.api.getTrendingPodcasts(categories);
+  public fetchTrendingPodcasts(
+    since: number,
+    categories?: number[]
+  ): Promise<ApiPodcast[]> {
+    return this.api.getTrendingPodcasts(since, categories);
   }
 
   public fetchPodcast(
@@ -154,7 +158,7 @@ export class FoxcastsCore {
     podcastId?: number | null,
     feedUrl?: string | null,
     count = 25,
-    since?: string
+    since?: number
   ): Promise<ApiEpisode[]> {
     return this.api.getEpisodes(podcastId, feedUrl, count, since);
   }
