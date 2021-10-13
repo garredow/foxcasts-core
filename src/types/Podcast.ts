@@ -10,4 +10,5 @@ export type Podcast = {
   artwork: string;
   categories: string[];
   lastUpdated?: string;
+  isFavorite: boolean;
 };

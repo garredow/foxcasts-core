@@ -1,4 +1,5 @@
 import Dexie from 'dexie';
+import { PlaybackStatus } from '../enums';
 import {
   Podcast,
   Episode,
@@ -9,8 +10,6 @@ import {
 import { NotFoundError } from '../utils/errors';
 import { fromApiEpisode } from '../utils/formatEpisode';
 
-export const databaseVersion = 1;
-
 class FoxcastsDB extends Dexie {
   podcasts: Dexie.Table<Podcast, number>;
   episodes: Dexie.Table<Episode, number>;
@@ -18,12 +17,34 @@ class FoxcastsDB extends Dexie {
   constructor(name: string) {
     super(name);
 
-    this.version(databaseVersion).stores({
+    this.version(1).stores({
       podcasts: '++id, &feedUrl, &podexId, itunesId',
       episodes: '++id, &podexId, &guid, podcastId, date, progress',
     });
+    this.version(2)
+      .stores({
+        podcasts: '++id, &feedUrl, &podexId, itunesId, isFavorite',
+        episodes:
+          '++id, &podexId, &guid, podcastId, date, playbackStatus, isDownloaded, isFavorite',
+      })
+      .upgrade((tx) => {
+        tx.table<Podcast, number>('podcasts')
+          .toCollection()
+          .modify((episode) => {
+            episode.isFavorite = false;
+          });
+        tx.table<Episode, number>('episodes')
+          .toCollection()
+          .modify((episode) => {
+            episode.isDownloaded = false;
+            episode.isFavorite = false;
+            episode.playbackStatus =
+              episode.progress > 0 && episode.progress === episode.duration
+                ? PlaybackStatus.Played
+                : PlaybackStatus.Unplayed;
+          });
+      });
 
-    // The following lines are needed for it to work across typescipt using babel-preset-typescript:
     this.podcasts = this.table('podcasts');
     this.episodes = this.table('episodes');
   }
@@ -74,6 +95,16 @@ export class Database {
         await this.db.episodes.bulkAdd(dbEpisodes as Episode[]);
       }
     );
+  }
+
+  public async updatePodcast(
+    podcastId: number,
+    changes: Partial<Podcast>
+  ): Promise<Podcast> {
+    delete changes.id;
+    await this.db.podcasts.update(podcastId, changes);
+    const result = await this.db.podcasts.get(podcastId);
+    return result as Podcast;
   }
 
   public async deletePodcast(podcastId: number): Promise<void> {
@@ -218,8 +249,8 @@ export class Database {
         break;
       case 'inProgress':
         episodes = await this.db.episodes
-          .where('progress')
-          .above(0)
+          .where('playbackStatus')
+          .equals(PlaybackStatus.InProgress)
           .reverse()
           .sortBy('date')
           .then((results) => results.filter((e) => e.progress < e.duration));
@@ -233,6 +264,7 @@ export class Database {
     episodeId: number,
     changes: Partial<Episode>
   ): Promise<Episode> {
+    delete changes.id;
     await this.db.episodes.update(episodeId, changes);
     const result = await this.db.episodes.get(episodeId);
     return result as Episode;

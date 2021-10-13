@@ -1,3 +1,4 @@
+import { PlaybackStatus } from '../enums';
 import { ApiEpisode, Episode } from '../types';
 
 export function fromApiEpisode(source: ApiEpisode): Omit<Episode, 'id'> {
@@ -13,8 +14,12 @@ export function fromApiEpisode(source: ApiEpisode): Omit<Episode, 'id'> {
     fileSize: source.fileSize,
     fileType: source.fileType,
     fileUrl: source.fileUrl,
+    localFileUrl: undefined,
     chapters: undefined,
     chaptersUrl: source.chaptersUrl,
     transcriptUrl: source.transcriptUrl,
+    playbackStatus: PlaybackStatus.Unplayed,
+    isDownloaded: false,
+    isFavorite: false,
   };
 }

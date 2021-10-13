@@ -1,3 +1,4 @@
+import { PlaybackStatus } from '../enums';
 import { Chapter } from './Chapter';
 
 export type Episode = {
@@ -13,7 +14,11 @@ export type Episode = {
   fileSize: number;
   fileType: string;
   fileUrl: string;
+  localFileUrl?: string;
   chaptersUrl?: string;
   chapters?: Chapter[];
   transcriptUrl?: string;
+  playbackStatus: PlaybackStatus;
+  isDownloaded: boolean;
+  isFavorite: boolean;
 };
