@@ -1,3 +1,11 @@
+# [1.2.0](https://github.com/garredow/foxcasts-core/compare/v1.1.0...v1.2.0) (2021-09-25)
+
+
+### Features
+
+* **trending:** add support for since option ([7f3dc0c](https://github.com/garredow/foxcasts-core/commit/7f3dc0cdf24cb1be1880cb9b0f24c8a8fcc98a39))
+* return update results ([962b075](https://github.com/garredow/foxcasts-core/commit/962b075f999c3ff55e248d5e2de8c833a711a718))
+
 # [1.1.0](https://github.com/garredow/foxcasts-core/compare/v1.0.0...v1.1.0) (2021-09-23)
 
 
