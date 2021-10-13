@@ -69,6 +69,13 @@ export class FoxcastsCore {
     return this.podcasts.unsubscribeByFeed(feedUrl);
   }
 
+  public updatePodcast(
+    podcastId: number,
+    data: Partial<Podcast>
+  ): Promise<Podcast> {
+    return this.podcasts.updatePodcast(podcastId, data);
+  }
+
   public getPodcasts(): Promise<Podcast[]> {
     return this.podcasts.getAllPodcasts();
   }
@@ -114,9 +121,6 @@ export class FoxcastsCore {
     episodeId: number,
     data: Partial<Episode>
   ): Promise<Episode> {
-    // Make sure no ID is passed in
-    delete data.id;
-
     return this.episodes.updateEpisode(episodeId, data);
   }
 

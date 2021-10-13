@@ -83,6 +83,13 @@ export class Podcasts {
     await this.database.deletePodcast(podcast.id);
   }
 
+  public updatePodcast(
+    podcastId: number,
+    data: Partial<Podcast>
+  ): Promise<Podcast> {
+    return this.database.updatePodcast(podcastId, data);
+  }
+
   public async getAllPodcasts(): Promise<Podcast[]> {
     return await this.database.getPodcasts();
   }
