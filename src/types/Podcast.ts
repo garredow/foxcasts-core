@@ -7,7 +7,6 @@ export type Podcast = {
   description?: string;
   feedUrl: string;
   artworkUrl: string;
-  artwork: string;
   categories: string[];
   lastUpdated?: string;
   isFavorite: boolean;

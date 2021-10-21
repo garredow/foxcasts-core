@@ -29,9 +29,8 @@ export class Podcasts {
 
     const podcast = await this.api.getPodcast(podexId);
     const episodes = await this.api.getEpisodes(podexId);
-    const artwork = await this.api.getArtwork(podcast.artworkUrl, 100);
 
-    await this.database.addPodcast(podcast, episodes, artwork);
+    await this.database.addPodcast(podcast, episodes);
   }
 
   public async subscribeByFeed(feedUrl: string): Promise<void> {
@@ -48,9 +47,8 @@ export class Podcasts {
 
     const podcast = await this.api.getPodcast(null, feedUrl);
     const episodes = await this.api.getEpisodes(null, feedUrl);
-    const artwork = await this.api.getArtwork(podcast.artworkUrl, 100);
 
-    await this.database.addPodcast(podcast, episodes, artwork);
+    await this.database.addPodcast(podcast, episodes);
   }
 
   public async unsubscribe(podcastId: number): Promise<void> {

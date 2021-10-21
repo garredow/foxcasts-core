@@ -90,8 +90,7 @@ export class Database {
 
   public async addPodcast(
     podcast: ApiPodcast,
-    episodes: ApiEpisode[],
-    artwork: string
+    episodes: ApiEpisode[]
   ): Promise<void> {
     const dbPodcast: Podcast = {
       podexId: podcast.podexId || null,
@@ -101,7 +100,6 @@ export class Database {
       description: podcast.description,
       feedUrl: podcast.feedUrl,
       artworkUrl: podcast.artworkUrl,
-      artwork,
       categories: podcast.categories,
       lastUpdated: episodes[0]?.date || undefined,
       isFavorite: false,
