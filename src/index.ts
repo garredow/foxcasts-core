@@ -11,6 +11,7 @@ import {
   PIStats,
   Episode,
   UpdateResult,
+  Artwork,
 } from './types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json');
@@ -18,6 +19,7 @@ import { Podcasts } from './internal/podcasts';
 import { Episodes } from './internal/episodes';
 import { Api } from './internal/api';
 import { Database } from './internal/database';
+import { Artworks } from './internal/artworks';
 
 export type CoreConfig = {
   baseUrl: string;
@@ -29,6 +31,7 @@ export class FoxcastsCore {
   private config: CoreConfig;
   private podcasts: Podcasts;
   private episodes: Episodes;
+  private artwork: Artworks;
   private api: Api;
   private db: Database;
   public static version = pkg.version;
@@ -44,6 +47,7 @@ export class FoxcastsCore {
     this.db = new Database(this.config);
     this.podcasts = new Podcasts(this.config, this.db);
     this.episodes = new Episodes(this.config, this.db);
+    this.artwork = new Artworks(this.config, this.db);
     this.api = new Api(this.config);
   }
 
@@ -140,6 +144,35 @@ export class FoxcastsCore {
       fileUrl,
       forceRefresh
     );
+  }
+
+  // Artwork
+
+  public getArtwork(
+    podcastId: number | string,
+    options: { size: number; blur?: number; greyscale?: boolean }
+  ): Promise<Artwork> {
+    return this.artwork.getArtwork(Number(podcastId), options);
+  }
+
+  public getArtworkById(
+    artworkId: number | string
+  ): Promise<Artwork | undefined> {
+    return this.artwork.getArtworkById(Number(artworkId));
+  }
+
+  public getArtworksByPodcastId(
+    podcastId: number | string
+  ): Promise<Artwork[]> {
+    return this.artwork.getArtworksByPodcastId(Number(podcastId));
+  }
+
+  public deleteArtworkById(artworkId: number | string): Promise<void> {
+    return this.artwork.deleteArtworkById(Number(artworkId));
+  }
+
+  public deleteArtworksByPodcastId(podcastId: number | string): Promise<void> {
+    return this.artwork.deleteArtworksByPodcastId(Number(podcastId));
   }
 
   // Fetch remote data

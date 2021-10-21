@@ -13,3 +13,5 @@ export * from './Health';
 export * from './Category';
 export * from './PIStats';
 export * from './UpdateResult';
+export * from './Artwork';
+export * from './Palette';

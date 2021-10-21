@@ -6,6 +6,7 @@ import {
   EpisodeFilterId,
   ApiPodcast,
   ApiEpisode,
+  Artwork,
 } from '../types';
 import { NotFoundError } from '../utils/errors';
 import { fromApiEpisode } from '../utils/formatEpisode';
@@ -13,6 +14,7 @@ import { fromApiEpisode } from '../utils/formatEpisode';
 class FoxcastsDB extends Dexie {
   podcasts: Dexie.Table<Podcast, number>;
   episodes: Dexie.Table<Episode, number>;
+  artwork: Dexie.Table<Artwork, number>;
 
   constructor(name: string) {
     super(name);
@@ -30,8 +32,8 @@ class FoxcastsDB extends Dexie {
       .upgrade((tx) => {
         tx.table<Podcast, number>('podcasts')
           .toCollection()
-          .modify((episode) => {
-            episode.isFavorite = false;
+          .modify((podcast) => {
+            podcast.isFavorite = false;
           });
         tx.table<Episode, number>('episodes')
           .toCollection()
@@ -44,9 +46,30 @@ class FoxcastsDB extends Dexie {
                 : PlaybackStatus.Unplayed;
           });
       });
+    this.version(3)
+      .stores({
+        podcasts: '++id, &feedUrl, &podexId, itunesId, isFavorite',
+        episodes:
+          '++id, &podexId, &guid, podcastId, date, playbackStatus, isDownloaded, isFavorite',
+        artwork: '++id, podcastId, size, blur, greyscale',
+      })
+      .upgrade((tx) => {
+        tx.table<Podcast, number>('podcasts')
+          .toCollection()
+          .modify((podcast) => {
+            (podcast as any).artwork = undefined;
+          });
+        tx.table<Episode, number>('episodes')
+          .toCollection()
+          .modify((episode) => {
+            episode.remoteFileUrl = (episode as any).fileUrl;
+            (episode as any).fileUrl = undefined;
+          });
+      });
 
     this.podcasts = this.table('podcasts');
     this.episodes = this.table('episodes');
+    this.artwork = this.table('artwork');
   }
 }
 
@@ -80,6 +103,8 @@ export class Database {
       artworkUrl: podcast.artworkUrl,
       artwork,
       categories: podcast.categories,
+      lastUpdated: episodes[0]?.date || undefined,
+      isFavorite: false,
     } as Podcast;
 
     await this.db.transaction(
@@ -302,6 +327,63 @@ export class Database {
     }
 
     return episode;
+  }
+
+  //#endregion
+
+  //#region Artwork
+
+  public async addArtwork(artwork: Omit<Artwork, 'id'>): Promise<number> {
+    return this.db.artwork.add(artwork as Artwork);
+  }
+
+  public async updateArtwork(
+    artworkId: number,
+    changes: Partial<Artwork>
+  ): Promise<Artwork> {
+    delete changes.id;
+    await this.db.artwork.update(artworkId, changes);
+    const result = await this.db.artwork.get(artworkId);
+    return result as Artwork;
+  }
+
+  public async getArtworkById(artworkId: number): Promise<Artwork | undefined> {
+    return this.db.artwork.get(artworkId);
+  }
+
+  public async getArtworksByPodcastId(podcastId: number): Promise<Artwork[]> {
+    return this.db.artwork.where({ podcastId }).toArray();
+  }
+
+  public async getArtwork(
+    podcastId: number,
+    options: {
+      size?: number;
+      blur?: number;
+      greyscale?: boolean;
+    }
+  ): Promise<Artwork | undefined> {
+    const query: Partial<Artwork> = {
+      podcastId,
+      size: options.size,
+    };
+    if (options.blur) {
+      query.blur = options.blur;
+    }
+    if (options.greyscale) {
+      query.greyscale = options.greyscale;
+    }
+    return this.db.artwork.get(query);
+  }
+
+  public async deleteArtwork(artworkId: number): Promise<void> {
+    return this.db.artwork.delete(artworkId);
+  }
+
+  public async deleteArtworksByPodcastId(podcastId: number): Promise<void> {
+    const artworks = await this.db.artwork.where({ podcastId }).toArray();
+    const ids = artworks.map((a) => a.id);
+    return this.db.artwork.bulkDelete(ids);
   }
 
   //#endregion
