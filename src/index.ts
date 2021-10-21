@@ -49,20 +49,20 @@ export class FoxcastsCore {
 
   // Podcasts
 
-  public subscribeByPodexId(podexId: number): Promise<void> {
-    return this.podcasts.subscribeByPodexId(podexId);
+  public subscribeByPodexId(podexId: number | string): Promise<void> {
+    return this.podcasts.subscribeByPodexId(Number(podexId));
   }
 
   public subscribeByFeedUrl(feedUrl: string): Promise<void> {
     return this.podcasts.subscribeByFeed(feedUrl);
   }
 
-  public unsubscribe(podcastId: number): Promise<void> {
-    return this.podcasts.unsubscribe(podcastId);
+  public unsubscribe(podcastId: number | string): Promise<void> {
+    return this.podcasts.unsubscribe(Number(podcastId));
   }
 
-  public unsubscribeByPodexId(podexId: number): Promise<void> {
-    return this.podcasts.unsubscribeByPodexId(podexId);
+  public unsubscribeByPodexId(podexId: number | string): Promise<void> {
+    return this.podcasts.unsubscribeByPodexId(Number(podexId));
   }
 
   public unsubscribeByFeedUrl(feedUrl: string): Promise<void> {
@@ -70,22 +70,22 @@ export class FoxcastsCore {
   }
 
   public updatePodcast(
-    podcastId: number,
+    podcastId: number | string,
     data: Partial<Podcast>
   ): Promise<Podcast> {
-    return this.podcasts.updatePodcast(podcastId, data);
+    return this.podcasts.updatePodcast(Number(podcastId), data);
   }
 
   public getPodcasts(): Promise<Podcast[]> {
     return this.podcasts.getAllPodcasts();
   }
 
-  public getPodcastById(podcastId: number): Promise<Podcast> {
-    return this.podcasts.getPodcastById(podcastId);
+  public getPodcastById(podcastId: number | string): Promise<Podcast> {
+    return this.podcasts.getPodcastById(Number(podcastId));
   }
 
-  public getPodcastByPodexId(podexId: number): Promise<Podcast> {
-    return this.podcasts.getPodcastByPodexId(podexId);
+  public getPodcastByPodexId(podexId: number | string): Promise<Podcast> {
+    return this.podcasts.getPodcastByPodexId(Number(podexId));
   }
 
   public getPodcastByFeedUrl(feedUrl: string): Promise<Podcast> {
@@ -98,16 +98,20 @@ export class FoxcastsCore {
 
   // Episodes
 
-  public getEpisodeById(episodeId: number): Promise<EpisodeExtended> {
-    return this.episodes.getEpisodeById(episodeId);
+  public getEpisodeById(episodeId: number | string): Promise<EpisodeExtended> {
+    return this.episodes.getEpisodeById(Number(episodeId));
   }
 
   public getEpisodesByPodcastId(
-    podcastId: number,
+    podcastId: number | string,
     limit = 30,
     offset = 0
   ): Promise<EpisodeExtended[]> {
-    return this.episodes.getEpisodesByPodcastId(podcastId, limit, offset);
+    return this.episodes.getEpisodesByPodcastId(
+      Number(podcastId),
+      limit,
+      offset
+    );
   }
 
   public getEpisodesByFilter(
@@ -118,20 +122,20 @@ export class FoxcastsCore {
   }
 
   public updateEpisode(
-    episodeId: number,
+    episodeId: number | string,
     data: Partial<Episode>
   ): Promise<Episode> {
-    return this.episodes.updateEpisode(episodeId, data);
+    return this.episodes.updateEpisode(Number(episodeId), data);
   }
 
   public getEpisodeChapters(
-    episodeId: number,
+    episodeId: number | string,
     podexId: number | null,
     fileUrl?: string,
     forceRefresh = false
   ): Promise<Chapter[]> {
     return this.episodes.getEpisodeChapters(
-      episodeId,
+      Number(episodeId),
       podexId,
       fileUrl,
       forceRefresh
