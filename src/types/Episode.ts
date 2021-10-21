@@ -13,7 +13,7 @@ export type Episode = {
   progress: number;
   fileSize: number;
   fileType: string;
-  fileUrl: string;
+  remoteFileUrl: string;
   localFileUrl?: string;
   chaptersUrl?: string;
   chapters?: Chapter[];
