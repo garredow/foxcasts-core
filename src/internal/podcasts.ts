@@ -15,7 +15,7 @@ export class Podcasts {
     this.database = database || new Database(this.config);
   }
 
-  public async subscribeByPodexId(podexId: number): Promise<void> {
+  public async subscribeByPodexId(podexId: number): Promise<number | void> {
     const existingSubscription = await this.database
       .getPodcastByPodexId(podexId)
       .catch((err: Error) => {
@@ -30,10 +30,10 @@ export class Podcasts {
     const podcast = await this.api.getPodcast(podexId);
     const episodes = await this.api.getEpisodes(podexId);
 
-    await this.database.addPodcast(podcast, episodes);
+    return this.database.addPodcast(podcast, episodes);
   }
 
-  public async subscribeByFeed(feedUrl: string): Promise<void> {
+  public async subscribeByFeed(feedUrl: string): Promise<number | void> {
     const existingSubscription = await this.database
       .getPodcastByFeed(feedUrl)
       .catch((err: Error) => {
@@ -48,7 +48,7 @@ export class Podcasts {
     const podcast = await this.api.getPodcast(null, feedUrl);
     const episodes = await this.api.getEpisodes(null, feedUrl);
 
-    await this.database.addPodcast(podcast, episodes);
+    return this.database.addPodcast(podcast, episodes);
   }
 
   public async unsubscribe(podcastId: number): Promise<void> {

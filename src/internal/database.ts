@@ -91,7 +91,7 @@ export class Database {
   public async addPodcast(
     podcast: ApiPodcast,
     episodes: ApiEpisode[]
-  ): Promise<void> {
+  ): Promise<number> {
     const dbPodcast: Podcast = {
       podexId: podcast.podexId || null,
       itunesId: podcast.itunesId || null,
@@ -105,7 +105,7 @@ export class Database {
       isFavorite: false,
     } as Podcast;
 
-    await this.db.transaction(
+    return this.db.transaction(
       'rw',
       this.db.podcasts,
       this.db.episodes,
@@ -116,6 +116,7 @@ export class Database {
           podcastId,
         }));
         await this.db.episodes.bulkAdd(dbEpisodes as Episode[]);
+        return podcastId;
       }
     );
   }
@@ -204,7 +205,7 @@ export class Database {
   public async addEpisode(
     podcastId: number,
     episode: ApiEpisode
-  ): Promise<void> {
+  ): Promise<number | void> {
     const existingEpisode = await this.getEpisodeByGuid(episode.guid).catch(
       (err) => {
         if (err instanceof NotFoundError) return null;
@@ -217,7 +218,7 @@ export class Database {
       );
       return;
     }
-    await this.db.episodes.add({
+    return this.db.episodes.add({
       ...fromApiEpisode(episode),
       podcastId,
     } as Episode);
