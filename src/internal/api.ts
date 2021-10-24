@@ -184,6 +184,27 @@ export class Api {
       });
   }
 
+  public getArtworkWithPalette(
+    imageUrl: string,
+    size: number,
+    blur?: number,
+    greyscale?: boolean
+  ): Promise<Palette & { imageData: string }> {
+    let url = `artworkWithPalette?imageUrl=${encodeURIComponent(
+      imageUrl
+    )}&size=${size}`;
+    if (blur) {
+      url += `&blur=${blur}`;
+    }
+    if (greyscale) {
+      url += `&greyscale=${greyscale}`;
+    }
+    return this.fetch<Palette & { imageData: string }>(url).catch((err) => {
+      console.log(`Failed to get artwork at ${url}`, err);
+      throw new Error('Failed to get artwork.');
+    });
+  }
+
   public getPalette(imageUrl: string): Promise<Palette> {
     const url = `artwork/palette?imageUrl=${encodeURIComponent(imageUrl)}`;
     return this.fetch<Palette>(url).catch((err) => {

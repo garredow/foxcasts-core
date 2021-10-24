@@ -42,21 +42,25 @@ export class Artworks {
     if (existing) return existing;
 
     const podcast = await this.database.getPodcastById(podcastId);
+    const { imageData, ...palette } = await this.api.getArtworkWithPalette(
+      podcast.artworkUrl,
+      size,
+      blur,
+      greyscale
+    );
 
-    const [image, palette] = await Promise.all([
-      this.api.getArtwork(podcast.artworkUrl, size, blur, greyscale),
-      this.api.getPalette(podcast.artworkUrl),
-    ]);
-    const id = await this.database.addArtwork({
+    const artwork = {
       podcastId,
-      image,
+      image: imageData,
       size,
       blur,
       greyscale,
-      palette,
-    });
+      palette: palette,
+    } as Artwork;
+    const id = await this.database.addArtwork(artwork);
+    artwork.id = id;
 
-    return (await this.database.getArtworkById(id)) as Artwork;
+    return artwork;
   }
 
   public async getArtworksByPodcastId(podcastId: number): Promise<Artwork[]> {
