@@ -28,7 +28,6 @@ export class Episodes {
     return {
       ...episode,
       podcastTitle: podcast.title,
-      cover: podcast.artwork,
     };
   }
 
