@@ -1,3 +1,17 @@
+# [1.4.0](https://github.com/garredow/foxcasts-core/compare/v1.3.0...v1.4.0) (2021-10-24)
+
+
+### Features
+
+* **artwork:** require options ([f55027d](https://github.com/garredow/foxcasts-core/commit/f55027dc69eb6a284dbe0643cc5638bfb343a3dd))
+* **episode:** rename fileUrl ([f3941cf](https://github.com/garredow/foxcasts-core/commit/f3941cffffcfa0f14148ab01bc5ba1423100a9a5))
+* **episodeextended:** replace cover with artwork ([4bcd5e2](https://github.com/garredow/foxcasts-core/commit/4bcd5e21bd978550a13bd7f6e747459aa1ea2878))
+* **index:** allow string ids ([2e44acc](https://github.com/garredow/foxcasts-core/commit/2e44acc433a6ea17e3a0131469c69550ca530fad))
+* **podcast:** change return type of subscribe ([03ddb7e](https://github.com/garredow/foxcasts-core/commit/03ddb7e509df042b39c2e5e1286f61713cb0206e))
+* **podcast:** remove artwork property ([e8dd56f](https://github.com/garredow/foxcasts-core/commit/e8dd56fd94a6d29d308d086f1e128d0616573d81))
+* **podcast:** return id when subscribing ([49597cb](https://github.com/garredow/foxcasts-core/commit/49597cbe2588210245b43b30826a4ecbd17d8fe7))
+* add artwork methods ([0fa93c6](https://github.com/garredow/foxcasts-core/commit/0fa93c611c3958ded9164ebdd0092f2a68146a7e))
+
 # [1.3.0](https://github.com/garredow/foxcasts-core/compare/v1.2.0...v1.3.0) (2021-10-13)
 
 
