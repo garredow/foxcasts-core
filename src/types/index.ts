@@ -15,3 +15,4 @@ export * from './PIStats';
 export * from './UpdateResult';
 export * from './Artwork';
 export * from './Palette';
+export * from './PodcastExtended';

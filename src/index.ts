@@ -53,24 +53,29 @@ export class FoxcastsCore {
 
   // Podcasts
 
-  public subscribeByPodexId(podexId: number | string): Promise<void> {
+  public subscribeByPodexId(podexId: number | string): Promise<number> {
     return this.podcasts.subscribeByPodexId(Number(podexId));
   }
 
-  public subscribeByFeedUrl(feedUrl: string): Promise<void> {
+  public subscribeByFeedUrl(feedUrl: string): Promise<number> {
     return this.podcasts.subscribeByFeed(feedUrl);
   }
 
-  public unsubscribe(podcastId: number | string): Promise<void> {
-    return this.podcasts.unsubscribe(Number(podcastId));
+  public async unsubscribe(podcastId: number | string): Promise<void> {
+    await this.podcasts.unsubscribe(Number(podcastId));
+    await this.artwork.deleteArtworksByPodcastId(Number(podcastId));
   }
 
-  public unsubscribeByPodexId(podexId: number | string): Promise<void> {
-    return this.podcasts.unsubscribeByPodexId(Number(podexId));
+  public async unsubscribeByPodexId(podexId: number | string): Promise<void> {
+    const podcast = await this.podcasts.getPodcastByPodexId(Number(podexId));
+    await this.artwork.deleteArtworksByPodcastId(Number(podcast.id));
+    await this.podcasts.unsubscribeByPodexId(Number(podexId));
   }
 
-  public unsubscribeByFeedUrl(feedUrl: string): Promise<void> {
-    return this.podcasts.unsubscribeByFeed(feedUrl);
+  public async unsubscribeByFeedUrl(feedUrl: string): Promise<void> {
+    const podcast = await this.podcasts.getPodcastByFeed(feedUrl);
+    await this.artwork.deleteArtworksByPodcastId(Number(podcast.id));
+    await this.podcasts.unsubscribeByFeed(feedUrl);
   }
 
   public updatePodcast(
@@ -150,9 +155,17 @@ export class FoxcastsCore {
 
   public getArtwork(
     podcastId: number | string,
-    options: { size: number; blur?: number; greyscale?: boolean }
+    {
+      size,
+      blur = 0,
+      greyscale = false,
+    }: { size: number; blur?: number; greyscale?: boolean }
   ): Promise<Artwork> {
-    return this.artwork.getArtwork(Number(podcastId), options);
+    return this.artwork.getArtwork(Number(podcastId), {
+      size,
+      blur,
+      greyscale,
+    });
   }
 
   public getArtworkById(

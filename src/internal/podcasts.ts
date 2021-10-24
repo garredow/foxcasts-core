@@ -15,7 +15,7 @@ export class Podcasts {
     this.database = database || new Database(this.config);
   }
 
-  public async subscribeByPodexId(podexId: number): Promise<number | void> {
+  public async subscribeByPodexId(podexId: number): Promise<number> {
     const existingSubscription = await this.database
       .getPodcastByPodexId(podexId)
       .catch((err: Error) => {
@@ -24,7 +24,7 @@ export class Podcasts {
       });
     if (existingSubscription) {
       console.log(`Already subscribed to ${podexId}`);
-      return;
+      return 0;
     }
 
     const podcast = await this.api.getPodcast(podexId);
@@ -33,7 +33,7 @@ export class Podcasts {
     return this.database.addPodcast(podcast, episodes);
   }
 
-  public async subscribeByFeed(feedUrl: string): Promise<number | void> {
+  public async subscribeByFeed(feedUrl: string): Promise<number> {
     const existingSubscription = await this.database
       .getPodcastByFeed(feedUrl)
       .catch((err: Error) => {
@@ -42,7 +42,7 @@ export class Podcasts {
       });
     if (existingSubscription) {
       console.log(`Already subscribed to ${feedUrl}`);
-      return;
+      return 0;
     }
 
     const podcast = await this.api.getPodcast(null, feedUrl);
