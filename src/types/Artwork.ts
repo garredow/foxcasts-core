@@ -7,7 +7,7 @@ export type Artwork = {
   podcastId: number;
   image: string;
   size: number;
-  blur?: number;
-  greyscale?: boolean;
+  blur: number;
+  greyscale: boolean;
   palette?: Palette;
 };

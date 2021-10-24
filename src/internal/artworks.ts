@@ -28,28 +28,31 @@ export class Artworks {
 
   public async getArtwork(
     podcastId: number,
-    options: { size: number; blur?: number; greyscale?: boolean }
+    {
+      size,
+      blur = 0,
+      greyscale = false,
+    }: { size: number; blur?: number; greyscale?: boolean }
   ): Promise<Artwork> {
-    const existing = await this.database.getArtwork(podcastId, options);
+    const existing = await this.database.getArtwork(podcastId, {
+      size,
+      blur,
+      greyscale,
+    });
     if (existing) return existing;
 
     const podcast = await this.database.getPodcastById(podcastId);
 
     const [image, palette] = await Promise.all([
-      this.api.getArtwork(
-        podcast.artworkUrl,
-        options.size,
-        options.blur,
-        options.greyscale
-      ),
+      this.api.getArtwork(podcast.artworkUrl, size, blur, greyscale),
       this.api.getPalette(podcast.artworkUrl),
     ]);
     const id = await this.database.addArtwork({
       podcastId,
       image,
-      size: options.size,
-      blur: options.blur,
-      greyscale: options.greyscale,
+      size,
+      blur,
+      greyscale,
       palette,
     });
 
