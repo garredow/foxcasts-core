@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/garredow/foxcasts-core/compare/v1.2.0...v1.3.0) (2021-10-13)
+
+
+### Features
+
+* add method to update podcast ([9582134](https://github.com/garredow/foxcasts-core/commit/95821345caa82bc8eaf16a996df956735dfc120e))
+* add new properties to podcast and episode ([5d9d3a7](https://github.com/garredow/foxcasts-core/commit/5d9d3a712e007ce79b03c0e0323eebf458f6bf83))
+
 # [1.2.0](https://github.com/garredow/foxcasts-core/compare/v1.1.0...v1.2.0) (2021-09-25)
 
 
