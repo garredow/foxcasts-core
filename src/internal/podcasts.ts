@@ -115,7 +115,10 @@ export class Podcasts {
       const podcast = await this.getPodcastById(podcastId);
       if (!podcast) continue;
       const latestEpisode = (
-        await this.database.getEpisodesByPodcastId(podcast.id, 1)
+        await this.database.getEpisodesByPodcastId(podcast.id, {
+          page: 0,
+          numItems: 1,
+        })
       )[0];
 
       if (!latestEpisode) {

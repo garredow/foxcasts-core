@@ -6,6 +6,7 @@ import {
   EpisodeFilterId,
   Chapter,
 } from '../types';
+import { PageOptions } from '../types/PageOptions';
 import { NotFoundError } from '../utils/errors';
 import { Api } from './api';
 import { Database } from './database';
@@ -28,6 +29,8 @@ export class Episodes {
     return {
       ...episode,
       podcastTitle: podcast.title,
+      artwork: podcast.artwork,
+      accentColor: podcast.accentColor,
     };
   }
 
@@ -41,14 +44,12 @@ export class Episodes {
 
   public async getEpisodesByPodcastId(
     podcastId: number,
-    limit = 30,
-    offset = 0
+    page: PageOptions
   ): Promise<EpisodeExtended[]> {
     const podcast = await this.database.getPodcastById(podcastId);
     const episodes = await this.database.getEpisodesByPodcastId(
       podcastId,
-      limit,
-      offset
+      page
     );
 
     return episodes.map((episode) =>
@@ -58,11 +59,11 @@ export class Episodes {
 
   public async getEpisodesByFilter(
     filterId: EpisodeFilterId,
-    limit = 30
+    page: PageOptions
   ): Promise<EpisodeExtended[]> {
     const [podcasts, episodes] = await Promise.all([
       this.database.getPodcasts(),
-      this.database.getEpisodesByFilter(filterId, limit),
+      this.database.getEpisodesByFilter(filterId, page),
     ]);
 
     const podcastMap = podcasts.reduce((result, podcast) => {

@@ -7,6 +7,7 @@ import {
   ApiPodcast,
   ApiEpisode,
   Artwork,
+  PageOptions,
 } from '../types';
 import { NotFoundError } from '../utils/errors';
 import { fromApiEpisode } from '../utils/formatEpisode';
@@ -64,6 +65,12 @@ class FoxcastsDB extends Dexie {
           .modify((episode) => {
             episode.remoteFileUrl = (episode as any).fileUrl;
             (episode as any).fileUrl = undefined;
+            episode.playbackStatus =
+              episode.progress > 0
+                ? episode.progress < episode.duration
+                  ? PlaybackStatus.InProgress
+                  : PlaybackStatus.Played
+                : PlaybackStatus.Unplayed;
           });
       });
 
@@ -235,31 +242,22 @@ export class Database {
 
   public async getEpisodesByPodcastId(
     podcastId: number,
-    limit = 30,
-    offset = 0
+    page: PageOptions
   ): Promise<Episode[]> {
     const result = await this.db.episodes
-      .where({ podcastId })
-      .toArray()
-      .then((episodes) =>
-        episodes.sort((a, b) => {
-          if (a.date > b.date) {
-            return -1;
-          }
-          if (b.date > a.date) {
-            return 1;
-          }
-          return 0;
-        })
-      )
-      .then((episodes) => episodes.slice(offset, limit));
+      .orderBy('date')
+      .reverse()
+      .filter((a) => a.podcastId === podcastId)
+      .offset(page.page * page.numItems)
+      .limit(page.numItems)
+      .toArray();
 
     return result;
   }
 
   public async getEpisodesByFilter(
     filterId: EpisodeFilterId,
-    limit = 30
+    page: PageOptions
   ): Promise<Episode[]> {
     let episodes = [];
 
@@ -268,16 +266,18 @@ export class Database {
         episodes = await this.db.episodes
           .orderBy('date')
           .reverse()
-          .limit(limit)
+          .offset(page.page * page.numItems)
+          .limit(page.numItems)
           .toArray();
         break;
       case 'inProgress':
         episodes = await this.db.episodes
-          .where('playbackStatus')
-          .equals(PlaybackStatus.InProgress)
+          .orderBy('date')
           .reverse()
-          .sortBy('date')
-          .then((results) => results.filter((e) => e.progress < e.duration));
+          .filter((a) => a.playbackStatus === PlaybackStatus.InProgress)
+          .offset(page.page * page.numItems)
+          .limit(page.numItems)
+          .toArray();
         break;
     }
 

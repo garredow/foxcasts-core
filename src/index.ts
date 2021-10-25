@@ -12,6 +12,7 @@ import {
   Episode,
   UpdateResult,
   Artwork,
+  PageOptions,
 } from './types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json');
@@ -113,21 +114,16 @@ export class FoxcastsCore {
 
   public getEpisodesByPodcastId(
     podcastId: number | string,
-    limit = 30,
-    offset = 0
+    page: PageOptions
   ): Promise<EpisodeExtended[]> {
-    return this.episodes.getEpisodesByPodcastId(
-      Number(podcastId),
-      limit,
-      offset
-    );
+    return this.episodes.getEpisodesByPodcastId(Number(podcastId), page);
   }
 
   public getEpisodesByFilter(
     filterId: EpisodeFilterId,
-    limit = 30
+    page: PageOptions
   ): Promise<EpisodeExtended[]> {
-    return this.episodes.getEpisodesByFilter(filterId, limit);
+    return this.episodes.getEpisodesByFilter(filterId, page);
   }
 
   public updateEpisode(

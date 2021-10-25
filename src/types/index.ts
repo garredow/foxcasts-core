@@ -16,3 +16,4 @@ export * from './UpdateResult';
 export * from './Artwork';
 export * from './Palette';
 export * from './PodcastExtended';
+export * from './PageOptions';
