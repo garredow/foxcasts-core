@@ -1,3 +1,12 @@
+# [1.5.0](https://github.com/garredow/foxcasts-core/compare/v1.4.0...v1.5.0) (2021-10-27)
+
+
+### Features
+
+* add artwork and accent color to models ([0d57e12](https://github.com/garredow/foxcasts-core/commit/0d57e1260fd05f29361363c4c273d26c21b07be0))
+* add episode pagination ([bacf945](https://github.com/garredow/foxcasts-core/commit/bacf94592a512bd53d0ee505c0c4d3a7deab4852))
+* **getartwork:** greatly improve performance ([e55fd4e](https://github.com/garredow/foxcasts-core/commit/e55fd4edbedefc421ec467d7a078bb223b2e19d6))
+
 # [1.4.0](https://github.com/garredow/foxcasts-core/compare/v1.3.0...v1.4.0) (2021-10-24)
 
 
