@@ -173,6 +173,13 @@ export class Database {
     return podcast;
   }
 
+  public async getPodcastsByIds(podcastIds: number[]): Promise<Podcast[]> {
+    const podcast = await this.db.podcasts
+      .bulkGet(podcastIds)
+      .then((res) => res.filter((a) => !!a) as Podcast[]);
+    return podcast;
+  }
+
   public async getPodcastByPodexId(podexId: number): Promise<Podcast> {
     if (typeof podexId === 'string') {
       podexId = parseInt(podexId, 10);
