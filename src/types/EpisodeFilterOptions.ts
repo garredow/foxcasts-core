@@ -9,4 +9,6 @@ export type EpisodeFilterOptions = {
   playbackStatus?: PlaybackStatus;
   isDownloaded?: boolean;
   isFavorite?: boolean;
+  longerThan?: number;
+  shorterThan?: number;
 };

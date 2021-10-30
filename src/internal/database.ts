@@ -51,7 +51,7 @@ class FoxcastsDB extends Dexie {
       .stores({
         podcasts: '++id, &feedUrl, &podexId, itunesId, isFavorite',
         episodes:
-          '++id, &podexId, &guid, podcastId, date, playbackStatus, isDownloaded, isFavorite',
+          '++id, &podexId, &guid, podcastId, date, playbackStatus, isDownloaded, isFavorite, duration',
         artwork: '++id, podcastId, size, blur, greyscale',
       })
       .upgrade((tx) => {
@@ -313,6 +313,8 @@ export class Database {
     playbackStatus,
     isDownloaded,
     isFavorite,
+    longerThan,
+    shorterThan,
     offset = 0,
     limit = 100,
   }: EpisodeFilterOptions): Promise<Episode[]> {
@@ -326,10 +328,7 @@ export class Database {
             episode.date > onOrAfterDate && episode.date <= beforeDate
         );
     } else {
-      query = this.db.episodes
-        .where('date')
-        .between(onOrAfterDate, beforeDate)
-        .and((episode) => (podcastId ? episode.podcastId === podcastId : true));
+      query = this.db.episodes.where('date').between(onOrAfterDate, beforeDate);
     }
 
     if (playbackStatus !== undefined) {
@@ -342,6 +341,14 @@ export class Database {
 
     if (isFavorite !== undefined) {
       query = query.and((episode) => episode.isFavorite === isFavorite);
+    }
+
+    if (longerThan !== undefined) {
+      query = query.and((episode) => episode.duration >= longerThan);
+    }
+
+    if (shorterThan !== undefined) {
+      query = query.and((episode) => episode.duration < shorterThan);
     }
 
     return await query
