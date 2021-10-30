@@ -1,13 +1,13 @@
-import Dexie from 'dexie';
+import Dexie, { Collection } from 'dexie';
 import { PlaybackStatus } from '../enums';
 import {
-  Podcast,
-  Episode,
-  EpisodeFilterId,
-  ApiPodcast,
   ApiEpisode,
+  ApiPodcast,
   Artwork,
+  Episode,
+  EpisodeFilterOptions,
   PageOptions,
+  Podcast,
 } from '../types';
 import { NotFoundError } from '../utils/errors';
 import { fromApiEpisode } from '../utils/formatEpisode';
@@ -248,40 +248,11 @@ export class Database {
       .orderBy('date')
       .reverse()
       .filter((a) => a.podcastId === podcastId)
-      .offset(page.page * page.numItems)
-      .limit(page.numItems)
+      .offset(page.offset)
+      .limit(page.limit)
       .toArray();
 
     return result;
-  }
-
-  public async getEpisodesByFilter(
-    filterId: EpisodeFilterId,
-    page: PageOptions
-  ): Promise<Episode[]> {
-    let episodes = [];
-
-    switch (filterId) {
-      case 'recent':
-        episodes = await this.db.episodes
-          .orderBy('date')
-          .reverse()
-          .offset(page.page * page.numItems)
-          .limit(page.numItems)
-          .toArray();
-        break;
-      case 'inProgress':
-        episodes = await this.db.episodes
-          .orderBy('date')
-          .reverse()
-          .filter((a) => a.playbackStatus === PlaybackStatus.InProgress)
-          .offset(page.page * page.numItems)
-          .limit(page.numItems)
-          .toArray();
-        break;
-    }
-
-    return episodes;
   }
 
   public async updateEpisode(
@@ -326,6 +297,50 @@ export class Database {
     }
 
     return episode;
+  }
+
+  public async getEpisodes({
+    podcastId,
+    afterDate: onOrAfterDate = new Date(0).toISOString(),
+    beforeDate = new Date().toISOString(),
+    playbackStatus,
+    isDownloaded,
+    isFavorite,
+    offset = 0,
+    limit = 100,
+  }: EpisodeFilterOptions): Promise<Episode[]> {
+    let query: Collection<Episode, number>;
+
+    if (podcastId) {
+      query = this.db.episodes
+        .where({ podcastId })
+        .and(
+          (episode) =>
+            episode.date > onOrAfterDate && episode.date <= beforeDate
+        );
+    } else {
+      query = this.db.episodes
+        .where('date')
+        .between(onOrAfterDate, beforeDate)
+        .and((episode) => (podcastId ? episode.podcastId === podcastId : true));
+    }
+
+    if (playbackStatus !== undefined) {
+      query = query.and((episode) => episode.playbackStatus === playbackStatus);
+    }
+
+    if (isDownloaded !== undefined) {
+      query = query.and((episode) => episode.isDownloaded === isDownloaded);
+    }
+
+    if (isFavorite !== undefined) {
+      query = query.and((episode) => episode.isFavorite === isFavorite);
+    }
+
+    return await query
+      .reverse()
+      .sortBy('date')
+      .then((res) => res.slice(0, offset + limit));
   }
 
   //#endregion

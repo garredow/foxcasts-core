@@ -1,12 +1,12 @@
 import { CoreConfig } from '..';
 import {
-  Podcast,
+  Chapter,
   Episode,
   EpisodeExtended,
-  EpisodeFilterId,
-  Chapter,
+  EpisodeFilterOptions,
+  PageOptions,
+  Podcast,
 } from '../types';
-import { PageOptions } from '../types/PageOptions';
 import { NotFoundError } from '../utils/errors';
 import { Api } from './api';
 import { Database } from './database';
@@ -42,37 +42,35 @@ export class Episodes {
     return this.addPodcastInfoToEpisode(podcast, episode);
   }
 
+  public async getEpisodes(
+    options: EpisodeFilterOptions
+  ): Promise<EpisodeExtended[]> {
+    const [podcastMap, episodes] = await Promise.all([
+      this.database.getPodcasts().then((podcasts) =>
+        podcasts.reduce((result, podcast) => {
+          result[podcast.id] = podcast;
+          return result;
+        }, {} as { [podcastId: number]: Podcast })
+      ),
+      this.database.getEpisodes(options),
+    ]);
+
+    return episodes.map((episode) =>
+      this.addPodcastInfoToEpisode(podcastMap[episode.podcastId], episode)
+    );
+  }
+
   public async getEpisodesByPodcastId(
     podcastId: number,
     page: PageOptions
   ): Promise<EpisodeExtended[]> {
-    const podcast = await this.database.getPodcastById(podcastId);
-    const episodes = await this.database.getEpisodesByPodcastId(
-      podcastId,
-      page
-    );
+    const [podcast, episodes] = await Promise.all([
+      this.database.getPodcastById(podcastId),
+      this.database.getEpisodesByPodcastId(podcastId, page),
+    ]);
 
     return episodes.map((episode) =>
       this.addPodcastInfoToEpisode(podcast, episode)
-    );
-  }
-
-  public async getEpisodesByFilter(
-    filterId: EpisodeFilterId,
-    page: PageOptions
-  ): Promise<EpisodeExtended[]> {
-    const [podcasts, episodes] = await Promise.all([
-      this.database.getPodcasts(),
-      this.database.getEpisodesByFilter(filterId, page),
-    ]);
-
-    const podcastMap = podcasts.reduce((result, podcast) => {
-      result[podcast.id] = podcast;
-      return result;
-    }, {} as { [podcastId: number]: Podcast });
-
-    return episodes.map((episode) =>
-      this.addPodcastInfoToEpisode(podcastMap[episode.podcastId], episode)
     );
   }
 

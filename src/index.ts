@@ -1,26 +1,26 @@
+import { Api } from './internal/api';
+import { Artworks } from './internal/artworks';
+import { Database } from './internal/database';
+import { Episodes } from './internal/episodes';
+import { Podcasts } from './internal/podcasts';
 import {
-  Podcast,
-  EpisodeExtended,
-  EpisodeFilterId,
-  Chapter,
-  SearchResult,
-  ApiPodcast,
   ApiEpisode,
-  Health,
-  Category,
-  PIStats,
-  Episode,
-  UpdateResult,
+  ApiPodcast,
   Artwork,
+  Category,
+  Chapter,
+  Episode,
+  EpisodeExtended,
+  EpisodeFilterOptions,
+  Health,
   PageOptions,
+  PIStats,
+  Podcast,
+  SearchResult,
+  UpdateResult,
 } from './types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json');
-import { Podcasts } from './internal/podcasts';
-import { Episodes } from './internal/episodes';
-import { Api } from './internal/api';
-import { Database } from './internal/database';
-import { Artworks } from './internal/artworks';
 
 export type CoreConfig = {
   baseUrl: string;
@@ -112,18 +112,17 @@ export class FoxcastsCore {
     return this.episodes.getEpisodeById(Number(episodeId));
   }
 
+  public async getEpisodes(
+    options: EpisodeFilterOptions
+  ): Promise<EpisodeExtended[]> {
+    return this.episodes.getEpisodes(options);
+  }
+
   public getEpisodesByPodcastId(
     podcastId: number | string,
     page: PageOptions
   ): Promise<EpisodeExtended[]> {
     return this.episodes.getEpisodesByPodcastId(Number(podcastId), page);
-  }
-
-  public getEpisodesByFilter(
-    filterId: EpisodeFilterId,
-    page: PageOptions
-  ): Promise<EpisodeExtended[]> {
-    return this.episodes.getEpisodesByFilter(filterId, page);
   }
 
   public updateEpisode(
