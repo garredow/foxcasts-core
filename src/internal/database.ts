@@ -4,12 +4,15 @@ import {
   ApiEpisode,
   ApiPodcast,
   Artwork,
+  ArtworkQuery,
+  ArtworksQuery,
   Episode,
-  EpisodeFilterOptions,
-  PageOptions,
+  EpisodeQuery,
+  EpisodesQuery,
   Podcast,
+  PodcastQuery,
+  PodcastsQuery,
 } from '../types';
-import { NotFoundError } from '../utils/errors';
 import { fromApiEpisode } from '../utils/formatEpisode';
 
 class FoxcastsDB extends Dexie {
@@ -26,9 +29,8 @@ class FoxcastsDB extends Dexie {
     });
     this.version(2)
       .stores({
-        podcasts: '++id, &feedUrl, &podexId, itunesId, isFavorite',
-        episodes:
-          '++id, &podexId, &guid, podcastId, date, playbackStatus, isDownloaded, isFavorite',
+        podcasts: '++id, &feedUrl, &podexId, itunesId',
+        episodes: '++id, &podexId, &guid, podcastId, date, playbackStatus',
       })
       .upgrade((tx) => {
         tx.table<Podcast, number>('podcasts')
@@ -49,9 +51,9 @@ class FoxcastsDB extends Dexie {
       });
     this.version(3)
       .stores({
-        podcasts: '++id, &feedUrl, &podexId, itunesId, isFavorite',
+        podcasts: '++id, &feedUrl, &podexId, itunesId',
         episodes:
-          '++id, &podexId, &guid, podcastId, date, playbackStatus, isDownloaded, isFavorite, duration',
+          '++id, &podexId, &guid, podcastId, date, playbackStatus, duration',
         artwork: '++id, podcastId, size, blur, greyscale',
       })
       .upgrade((tx) => {
@@ -93,12 +95,9 @@ export class Database {
     this.db = new FoxcastsDB(this.config.dbName);
   }
 
-  //#region Podcasts
+  // Podcasts
 
-  public async addPodcast(
-    podcast: ApiPodcast,
-    episodes: ApiEpisode[]
-  ): Promise<number> {
+  public async addPodcast(podcast: ApiPodcast): Promise<number> {
     const dbPodcast: Podcast = {
       podexId: podcast.podexId || null,
       itunesId: podcast.itunesId || null,
@@ -108,124 +107,60 @@ export class Database {
       feedUrl: podcast.feedUrl,
       artworkUrl: podcast.artworkUrl,
       categories: podcast.categories,
-      lastUpdated: episodes[0]?.date || undefined,
       isFavorite: false,
     } as Podcast;
 
-    return this.db.transaction(
-      'rw',
-      this.db.podcasts,
-      this.db.episodes,
-      async () => {
-        const podcastId = (await this.db.podcasts.add(dbPodcast)) as number;
-        const dbEpisodes: Omit<Episode, 'id'>[] = episodes.map((ep) => ({
-          ...fromApiEpisode(ep),
-          podcastId,
-        }));
-        await this.db.episodes.bulkAdd(dbEpisodes as Episode[]);
-        return podcastId;
-      }
-    );
+    return this.db.podcasts.add(dbPodcast);
   }
 
   public async updatePodcast(
     podcastId: number,
     changes: Partial<Podcast>
-  ): Promise<Podcast> {
+  ): Promise<number> {
     delete changes.id;
-    await this.db.podcasts.update(podcastId, changes);
-    const result = await this.db.podcasts.get(podcastId);
-    return result as Podcast;
+    return this.db.podcasts.update(podcastId, changes);
   }
 
   public async deletePodcast(podcastId: number): Promise<void> {
-    if (typeof podcastId === 'string') {
-      podcastId = parseInt(podcastId, 10);
-    }
-
-    await this.db.transaction(
-      'rw',
-      this.db.podcasts,
-      this.db.episodes,
-      async () => {
-        const episodes = await this.db.episodes.where({ podcastId }).toArray();
-        const episodeIds = episodes.map((episode) => episode.id);
-
-        await this.db.podcasts.delete(podcastId);
-        await this.db.episodes.bulkDelete(episodeIds);
-      }
-    );
+    return this.db.podcasts.delete(podcastId);
   }
 
-  public async getPodcastById(podcastId: number): Promise<Podcast> {
-    if (typeof podcastId === 'string') {
-      podcastId = parseInt(podcastId, 10);
-    }
+  public async getPodcast(query: PodcastQuery): Promise<Podcast | undefined> {
+    if (!query.id) delete query.id;
+    if (!query.podexId) delete query.podexId;
+    if (!query.feedUrl) delete query.feedUrl;
 
-    const podcast = await this.db.podcasts.get({
-      id: podcastId,
-    });
-
-    if (!podcast) {
-      throw new NotFoundError(`No podcast found for id ${podcastId}`);
-    }
-
-    return podcast;
+    return this.db.podcasts.get(query);
   }
 
-  public async getPodcastsByIds(podcastIds: number[]): Promise<Podcast[]> {
-    const podcast = await this.db.podcasts
-      .bulkGet(podcastIds)
-      .then((res) => res.filter((a) => !!a) as Podcast[]);
-    return podcast;
-  }
+  public async getPodcasts({
+    podcastIds = undefined,
+    offset = 0,
+    limit = 50,
+  }: PodcastsQuery): Promise<Podcast[]> {
+    let query: Collection<Podcast, number>;
 
-  public async getPodcastByPodexId(podexId: number): Promise<Podcast> {
-    if (typeof podexId === 'string') {
-      podexId = parseInt(podexId, 10);
+    if (podcastIds !== undefined) {
+      query = this.db.podcasts.where('id').anyOf(podcastIds);
+    } else {
+      query = this.db.podcasts.toCollection();
     }
 
-    const podcast = await this.db.podcasts.get({
-      podexId,
-    });
-
-    if (!podcast) {
-      throw new NotFoundError(`No podcast found for podex id ${podexId}`);
-    }
-
-    return podcast;
+    return await query
+      .sortBy('title')
+      .then((res) => res.slice(offset, offset + limit));
   }
 
-  public async getPodcastByFeed(feedUrl: string): Promise<Podcast> {
-    const podcast = await this.db.podcasts.get({
-      feedUrl,
-    });
-
-    if (!podcast) {
-      throw new NotFoundError(`No podcast found for feed url ${feedUrl}`);
-    }
-
-    return podcast;
-  }
-
-  public async getPodcasts(): Promise<Podcast[]> {
-    return await this.db.podcasts.toCollection().sortBy('title');
-  }
-
-  //#endregion
-
-  //#region Episodes
+  // Episodes
 
   public async addEpisode(
     podcastId: number,
     episode: ApiEpisode
   ): Promise<number | void> {
-    const existingEpisode = await this.getEpisodeByGuid(episode.guid).catch(
-      (err) => {
-        if (err instanceof NotFoundError) return null;
-        throw err;
-      }
-    );
+    const existingEpisode = await this.getEpisode({
+      podexId: episode.podexId,
+      guid: episode.guid,
+    });
     if (existingEpisode) {
       console.log(
         `Episode ${episode.guid} (${episode.title}) already exists in database.`
@@ -247,69 +182,39 @@ export class Database {
     }
   }
 
-  public async getEpisodesByPodcastId(
-    podcastId: number,
-    page: PageOptions
-  ): Promise<Episode[]> {
-    const result = await this.db.episodes
-      .orderBy('date')
-      .reverse()
-      .filter((a) => a.podcastId === podcastId)
-      .offset(page.offset)
-      .limit(page.limit)
-      .toArray();
+  public async deleteEpisode(episodeId: number): Promise<number | void> {
+    return this.db.episodes.delete(episodeId);
+  }
 
-    return result;
+  public async deleteEpisodes(episodeIds: number[]): Promise<void> {
+    return this.db.episodes.bulkDelete(episodeIds);
   }
 
   public async updateEpisode(
     episodeId: number,
     changes: Partial<Episode>
-  ): Promise<Episode> {
+  ): Promise<number> {
     delete changes.id;
-    await this.db.episodes.update(episodeId, changes);
-    const result = await this.db.episodes.get(episodeId);
-    return result as Episode;
+    return this.db.episodes.update(episodeId, changes);
   }
 
-  public async getEpisodeById(episodeId: number): Promise<Episode> {
-    if (typeof episodeId === 'string') {
-      episodeId = parseInt(episodeId, 10);
-    }
+  public async getEpisode(
+    episodeKey: EpisodeQuery
+  ): Promise<Episode | undefined> {
+    const query =
+      episodeKey.id !== undefined
+        ? { id: episodeKey.id }
+        : episodeKey.podexId !== undefined
+        ? { podexId: episodeKey.podexId }
+        : { guid: episodeKey.guid };
 
-    const episode = await this.db.episodes.get({ id: episodeId });
-
-    if (!episode) {
-      throw new NotFoundError(`No episode found for id ${episodeId}`);
-    }
-
-    return episode;
-  }
-
-  public async getEpisodeByGuid(guid: string): Promise<Episode> {
-    const episode = await this.db.episodes.get({ guid });
-
-    if (!episode) {
-      throw new NotFoundError(`No episode found for guid ${guid}`);
-    }
-
-    return episode;
-  }
-
-  public async getEpisodeByPodexId(podexId: number): Promise<Episode> {
-    const episode = await this.db.episodes.get({ podexId });
-
-    if (!episode) {
-      throw new NotFoundError(`No episode found for podexId ${podexId}`);
-    }
-
-    return episode;
+    return this.db.episodes.get(query);
   }
 
   public async getEpisodes({
-    podcastId,
-    afterDate: onOrAfterDate = new Date(0).toISOString(),
-    beforeDate = new Date().toISOString(),
+    podcastIds,
+    afterDate,
+    beforeDate,
     playbackStatus,
     isDownloaded,
     isFavorite,
@@ -317,18 +222,38 @@ export class Database {
     shorterThan,
     offset = 0,
     limit = 100,
-  }: EpisodeFilterOptions): Promise<Episode[]> {
+  }: EpisodesQuery): Promise<Episode[]> {
     let query: Collection<Episode, number>;
 
-    if (podcastId) {
+    // Try to put together the most efficient query depending on what we get
+    if (podcastIds) {
+      query = this.db.episodes.where('podcastId').anyOf(podcastIds);
+    } else if (afterDate && beforeDate) {
+      query = this.db.episodes.where('date').between(afterDate, beforeDate);
+    } else if (afterDate) {
+      query = this.db.episodes.where('date').aboveOrEqual(afterDate);
+    } else if (beforeDate) {
+      query = this.db.episodes.where('date').below(beforeDate);
+    } else if (playbackStatus) {
+      query = this.db.episodes.where('playbackStatus').equals(playbackStatus);
+    } else if (shorterThan !== undefined && longerThan !== undefined) {
       query = this.db.episodes
-        .where({ podcastId })
-        .and(
-          (episode) =>
-            episode.date > onOrAfterDate && episode.date <= beforeDate
-        );
+        .where('duration')
+        .between(longerThan, shorterThan, true, false);
+    } else if (longerThan !== undefined) {
+      query = this.db.episodes.where('duration').aboveOrEqual(longerThan);
+    } else if (shorterThan !== undefined) {
+      query = this.db.episodes.where('duration').below(shorterThan);
     } else {
-      query = this.db.episodes.where('date').between(onOrAfterDate, beforeDate);
+      query = this.db.episodes.toCollection();
+    }
+
+    if (afterDate !== undefined) {
+      query = query.and((episode) => episode.date >= afterDate);
+    }
+
+    if (beforeDate !== undefined) {
+      query = query.and((episode) => episode.date < beforeDate);
     }
 
     if (playbackStatus !== undefined) {
@@ -354,12 +279,10 @@ export class Database {
     return await query
       .reverse()
       .sortBy('date')
-      .then((res) => res.slice(0, offset + limit));
+      .then((res) => res.slice(offset, offset + limit));
   }
 
-  //#endregion
-
-  //#region Artwork
+  // Artwork
 
   public async addArtwork(artwork: Omit<Artwork, 'id'>): Promise<number> {
     return this.db.artwork.add(artwork as Artwork);
@@ -368,53 +291,30 @@ export class Database {
   public async updateArtwork(
     artworkId: number,
     changes: Partial<Artwork>
-  ): Promise<Artwork> {
+  ): Promise<number> {
     delete changes.id;
-    await this.db.artwork.update(artworkId, changes);
-    const result = await this.db.artwork.get(artworkId);
-    return result as Artwork;
-  }
-
-  public async getArtworkById(artworkId: number): Promise<Artwork | undefined> {
-    return this.db.artwork.get(artworkId);
-  }
-
-  public async getArtworksByPodcastId(podcastId: number): Promise<Artwork[]> {
-    return this.db.artwork.where({ podcastId }).toArray();
-  }
-
-  public async getArtwork(
-    podcastId: number,
-    options: {
-      size?: number;
-      blur?: number;
-      greyscale?: boolean;
-    }
-  ): Promise<Artwork | undefined> {
-    const query: Partial<Artwork> = {
-      podcastId,
-      size: options.size,
-    };
-    if (options.blur) {
-      query.blur = options.blur;
-    }
-    if (options.greyscale) {
-      query.greyscale = options.greyscale;
-    }
-    return this.db.artwork.get(query);
+    return this.db.artwork.update(artworkId, changes);
   }
 
   public async deleteArtwork(artworkId: number): Promise<void> {
     return this.db.artwork.delete(artworkId);
   }
 
-  public async deleteArtworksByPodcastId(podcastId: number): Promise<void> {
-    const artworks = await this.db.artwork.where({ podcastId }).toArray();
-    const ids = artworks.map((a) => a.id);
-    return this.db.artwork.bulkDelete(ids);
+  public async deleteArtworks(artworkIds: number[]): Promise<void> {
+    console.log('delete', artworkIds);
+
+    return this.db.artwork.bulkDelete(artworkIds);
   }
 
-  //#endregion
+  public async getArtwork(query: ArtworkQuery): Promise<Artwork | undefined> {
+    return this.db.artwork.get(query);
+  }
+
+  public async getArtworks(query: ArtworksQuery): Promise<Artwork[]> {
+    return this.db.artwork.where('podcastId').anyOf(query.podcastIds).toArray();
+  }
+
+  // Misc
 
   public async health() {
     let healthy = true;

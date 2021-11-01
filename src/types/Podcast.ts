@@ -1,3 +1,5 @@
+import { Palette } from '.';
+
 export type Podcast = {
   id: number;
   podexId: number | null;
@@ -12,4 +14,5 @@ export type Podcast = {
   isFavorite: boolean;
   artwork?: string;
   accentColor?: string;
+  palette?: Palette;
 };
