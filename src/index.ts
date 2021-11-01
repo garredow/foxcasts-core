@@ -12,6 +12,7 @@ import {
   EpisodeExtended,
   EpisodeQuery,
   EpisodesQuery,
+  FilterList,
   Health,
   PIStats,
   Podcast,
@@ -246,6 +247,27 @@ export class FoxcastsCore {
   public async deleteArtworks(query: ArtworksQuery): Promise<void> {
     const artworks = await this.database.getArtworks(query);
     return this.database.deleteArtworks(artworks.map((a) => a.id));
+  }
+
+  // Filter Lists
+
+  public async addFilterList(list: Omit<FilterList, 'id'>): Promise<number> {
+    return this.database.addFilterList(list);
+  }
+
+  public async updateFilterList(
+    listId: number,
+    changes: Omit<Partial<FilterList>, 'id'>
+  ): Promise<number> {
+    return this.database.updateFilterList(listId, changes);
+  }
+
+  public async deleteFilterLists(listIds: number[]): Promise<void> {
+    return this.database.deleteFilterLists(listIds);
+  }
+
+  public async getFilterLists(): Promise<FilterList[]> {
+    return this.database.getFilterLists();
   }
 
   // Fetch remote data

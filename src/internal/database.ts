@@ -9,6 +9,7 @@ import {
   Episode,
   EpisodeQuery,
   EpisodesQuery,
+  FilterList,
   Podcast,
   PodcastQuery,
   PodcastsQuery,
@@ -19,6 +20,7 @@ class FoxcastsDB extends Dexie {
   podcasts: Dexie.Table<Podcast, number>;
   episodes: Dexie.Table<Episode, number>;
   artwork: Dexie.Table<Artwork, number>;
+  filterLists: Dexie.Table<FilterList, number>;
 
   constructor(name: string) {
     super(name);
@@ -55,6 +57,7 @@ class FoxcastsDB extends Dexie {
         episodes:
           '++id, &podexId, &guid, podcastId, date, playbackStatus, duration',
         artwork: '++id, podcastId, size, blur, greyscale',
+        filterLists: '++id',
       })
       .upgrade((tx) => {
         tx.table<Podcast, number>('podcasts')
@@ -79,6 +82,7 @@ class FoxcastsDB extends Dexie {
     this.podcasts = this.table('podcasts');
     this.episodes = this.table('episodes');
     this.artwork = this.table('artwork');
+    this.filterLists = this.table('filterLists');
   }
 }
 
@@ -314,6 +318,26 @@ export class Database {
     return this.db.artwork.where('podcastId').anyOf(query.podcastIds).toArray();
   }
 
+  // Filter Lists
+
+  public async addFilterList(list: Omit<FilterList, 'id'>): Promise<number> {
+    return this.db.filterLists.add(list as FilterList);
+  }
+
+  public async updateFilterList(
+    listId: number,
+    changes: Omit<Partial<FilterList>, 'id'>
+  ): Promise<number> {
+    return this.db.filterLists.update(listId, changes);
+  }
+
+  public async deleteFilterLists(listIds: number[]): Promise<void> {
+    return this.db.filterLists.bulkDelete(listIds);
+  }
+
+  public async getFilterLists(): Promise<FilterList[]> {
+    return this.db.filterLists.toArray();
+  }
   // Misc
 
   public async health() {
