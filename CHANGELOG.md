@@ -1,3 +1,21 @@
+# [2.0.0](https://github.com/garredow/foxcasts-core/compare/v1.5.0...v2.0.0) (2021-11-02)
+
+
+### Features
+
+* add duration to episode filter ([05fd45d](https://github.com/garredow/foxcasts-core/commit/05fd45d951e6fb67aafe9608d3a028514b5cb08e))
+* add filter list options ([557e19b](https://github.com/garredow/foxcasts-core/commit/557e19b45604aac3cb23da4410b40ff732e2ca3b))
+* add filter lists ([ff58262](https://github.com/garredow/foxcasts-core/commit/ff58262c82edd5caf76863630ace826d0e131718))
+* add getepisodes function ([6f7a77e](https://github.com/garredow/foxcasts-core/commit/6f7a77eb79bf17a842096316022587e4b17c680f))
+* add getPodcastsByIds function ([fb80ce1](https://github.com/garredow/foxcasts-core/commit/fb80ce156ce9c19cfef640510b5217b3d37f3389))
+* convert bool to 1 and 0 ([c43f69f](https://github.com/garredow/foxcasts-core/commit/c43f69fda0eacbb2140e87b326b92da223d2ce65))
+* refactor ([b4da4c7](https://github.com/garredow/foxcasts-core/commit/b4da4c7472c4ab337cf7ac595890d5a6c6c350c8))
+
+
+### BREAKING CHANGES
+
+* change to db indexes
+
 # [1.5.0](https://github.com/garredow/foxcasts-core/compare/v1.4.0...v1.5.0) (2021-10-27)
 
 
