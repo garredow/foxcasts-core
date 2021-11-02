@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/garredow/foxcasts-core#readme",
   "dependencies": {
+    "date-fns": "^2.25.0",
     "dexie": "^3.0.3"
   },
   "devDependencies": {

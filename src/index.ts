@@ -216,7 +216,7 @@ export class FoxcastsCore {
       podcast.artworkUrl,
       query.size || 100,
       query.blur,
-      query.greyscale
+      !!query.greyscale
     );
 
     const artwork = {
@@ -251,23 +251,31 @@ export class FoxcastsCore {
 
   // Filter Lists
 
-  public async addFilterList(list: Omit<FilterList, 'id'>): Promise<number> {
-    return this.database.addFilterList(list);
+  public async addFilterList<T>(
+    list: Omit<FilterList<T>, 'id'>
+  ): Promise<number> {
+    return this.database.addFilterList<T>(list);
   }
 
-  public async updateFilterList(
+  public async updateFilterList<T>(
     listId: number,
-    changes: Omit<Partial<FilterList>, 'id'>
+    changes: Omit<Partial<FilterList<T>>, 'id'>
   ): Promise<number> {
-    return this.database.updateFilterList(listId, changes);
+    return this.database.updateFilterList<T>(listId, changes);
   }
 
   public async deleteFilterLists(listIds: number[]): Promise<void> {
     return this.database.deleteFilterLists(listIds);
   }
 
-  public async getFilterLists(): Promise<FilterList[]> {
-    return this.database.getFilterLists();
+  public async getFilterList<T>(
+    id: number
+  ): Promise<FilterList<T> | undefined> {
+    return this.database.getFilterList<T>(id);
+  }
+
+  public async getFilterLists<T>(): Promise<FilterList<T>[]> {
+    return this.database.getFilterLists<T>();
   }
 
   // Fetch remote data

@@ -11,6 +11,7 @@ export type PodcastQuery = AtLeastOne<{
 
 export type PodcastsQuery = {
   podcastIds?: number[];
+  isFavorite?: 0 | 1;
   offset?: number;
   limit?: number;
 };
@@ -24,10 +25,11 @@ export type EpisodeQuery = AtLeastOne<{
 export type EpisodesQuery = {
   afterDate?: string;
   beforeDate?: string;
+  withinDays?: number;
   podcastIds?: number[];
-  playbackStatus?: PlaybackStatus;
-  isDownloaded?: boolean;
-  isFavorite?: boolean;
+  playbackStatuses?: PlaybackStatus[];
+  isDownloaded?: 0 | 1;
+  isFavorite?: 0 | 1;
   longerThan?: number;
   shorterThan?: number;
   offset?: number;
@@ -39,7 +41,7 @@ export type ArtworkQuery = AtLeastOne<{
   podcastId?: number;
   size?: number;
   blur?: number;
-  greyscale?: boolean;
+  greyscale?: 0 | 1;
 }>;
 
 export type ArtworksQuery = {

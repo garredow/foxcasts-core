@@ -1,3 +1,4 @@
+import { sub } from 'date-fns';
 import Dexie, { Collection } from 'dexie';
 import { PlaybackStatus } from '../enums';
 import {
@@ -20,7 +21,7 @@ class FoxcastsDB extends Dexie {
   podcasts: Dexie.Table<Podcast, number>;
   episodes: Dexie.Table<Episode, number>;
   artwork: Dexie.Table<Artwork, number>;
-  filterLists: Dexie.Table<FilterList, number>;
+  filterLists: Dexie.Table<FilterList<unknown>, number>;
 
   constructor(name: string) {
     super(name);
@@ -38,13 +39,13 @@ class FoxcastsDB extends Dexie {
         tx.table<Podcast, number>('podcasts')
           .toCollection()
           .modify((podcast) => {
-            podcast.isFavorite = false;
+            podcast.isFavorite = 0;
           });
         tx.table<Episode, number>('episodes')
           .toCollection()
           .modify((episode) => {
-            episode.isDownloaded = false;
-            episode.isFavorite = false;
+            episode.isDownloaded = 0;
+            episode.isFavorite = 0;
             episode.playbackStatus =
               episode.progress > 0 && episode.progress === episode.duration
                 ? PlaybackStatus.Played
@@ -53,9 +54,9 @@ class FoxcastsDB extends Dexie {
       });
     this.version(3)
       .stores({
-        podcasts: '++id, &feedUrl, &podexId, itunesId',
+        podcasts: '++id, &feedUrl, &podexId, itunesId, isFavorite',
         episodes:
-          '++id, &podexId, &guid, podcastId, date, playbackStatus, duration',
+          '++id, &podexId, &guid, podcastId, date, playbackStatus, duration, isFavorite, isDownloaded',
         artwork: '++id, podcastId, size, blur, greyscale',
         filterLists: '++id',
       })
@@ -111,7 +112,7 @@ export class Database {
       feedUrl: podcast.feedUrl,
       artworkUrl: podcast.artworkUrl,
       categories: podcast.categories,
-      isFavorite: false,
+      isFavorite: 0,
     } as Podcast;
 
     return this.db.podcasts.add(dbPodcast);
@@ -138,7 +139,8 @@ export class Database {
   }
 
   public async getPodcasts({
-    podcastIds = undefined,
+    podcastIds,
+    isFavorite,
     offset = 0,
     limit = 50,
   }: PodcastsQuery): Promise<Podcast[]> {
@@ -148,6 +150,10 @@ export class Database {
       query = this.db.podcasts.where('id').anyOf(podcastIds);
     } else {
       query = this.db.podcasts.toCollection();
+    }
+
+    if (isFavorite !== undefined) {
+      query.and((podcast) => podcast.isFavorite === isFavorite);
     }
 
     return await query
@@ -219,7 +225,8 @@ export class Database {
     podcastIds,
     afterDate,
     beforeDate,
-    playbackStatus,
+    withinDays,
+    playbackStatuses,
     isDownloaded,
     isFavorite,
     longerThan,
@@ -238,8 +245,8 @@ export class Database {
       query = this.db.episodes.where('date').aboveOrEqual(afterDate);
     } else if (beforeDate) {
       query = this.db.episodes.where('date').below(beforeDate);
-    } else if (playbackStatus) {
-      query = this.db.episodes.where('playbackStatus').equals(playbackStatus);
+    } else if (playbackStatuses) {
+      query = this.db.episodes.where('playbackStatus').anyOf(playbackStatuses);
     } else if (shorterThan !== undefined && longerThan !== undefined) {
       query = this.db.episodes
         .where('duration')
@@ -248,6 +255,14 @@ export class Database {
       query = this.db.episodes.where('duration').aboveOrEqual(longerThan);
     } else if (shorterThan !== undefined) {
       query = this.db.episodes.where('duration').below(shorterThan);
+    } else if (isDownloaded !== undefined) {
+      query = this.db.episodes.where('isDownloaded').equals(isDownloaded);
+    } else if (isFavorite !== undefined) {
+      query = this.db.episodes.where('isFavorite').equals(isFavorite);
+    } else if (withinDays !== undefined) {
+      query = this.db.episodes
+        .where('date')
+        .aboveOrEqual(sub(new Date(), { days: withinDays }).toISOString());
     } else {
       query = this.db.episodes.toCollection();
     }
@@ -260,8 +275,10 @@ export class Database {
       query = query.and((episode) => episode.date < beforeDate);
     }
 
-    if (playbackStatus !== undefined) {
-      query = query.and((episode) => episode.playbackStatus === playbackStatus);
+    if (playbackStatuses !== undefined) {
+      query = query.and((episode) =>
+        playbackStatuses.includes(episode.playbackStatus)
+      );
     }
 
     if (isDownloaded !== undefined) {
@@ -278,6 +295,13 @@ export class Database {
 
     if (shorterThan !== undefined) {
       query = query.and((episode) => episode.duration < shorterThan);
+    }
+
+    if (withinDays !== undefined) {
+      query = query.and(
+        (episode) =>
+          episode.date > sub(new Date(), { days: withinDays }).toISOString()
+      );
     }
 
     return await query
@@ -320,13 +344,15 @@ export class Database {
 
   // Filter Lists
 
-  public async addFilterList(list: Omit<FilterList, 'id'>): Promise<number> {
-    return this.db.filterLists.add(list as FilterList);
+  public async addFilterList<T>(
+    list: Omit<FilterList<T>, 'id'>
+  ): Promise<number> {
+    return this.db.filterLists.add(list as FilterList<T>);
   }
 
-  public async updateFilterList(
+  public async updateFilterList<T>(
     listId: number,
-    changes: Omit<Partial<FilterList>, 'id'>
+    changes: Omit<Partial<FilterList<T>>, 'id'>
   ): Promise<number> {
     return this.db.filterLists.update(listId, changes);
   }
@@ -335,8 +361,14 @@ export class Database {
     return this.db.filterLists.bulkDelete(listIds);
   }
 
-  public async getFilterLists(): Promise<FilterList[]> {
-    return this.db.filterLists.toArray();
+  public async getFilterList<T>(
+    id: number
+  ): Promise<FilterList<T> | undefined> {
+    return this.db.filterLists.get(id) as Promise<FilterList<T> | undefined>;
+  }
+
+  public async getFilterLists<T>(): Promise<FilterList<T>[]> {
+    return this.db.filterLists.toArray() as Promise<FilterList<T>[]>;
   }
   // Misc
 
