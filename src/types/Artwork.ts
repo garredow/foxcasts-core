@@ -8,6 +8,6 @@ export type Artwork = {
   image: string;
   size: number;
   blur: number;
-  greyscale: boolean;
+  greyscale: 0 | 1;
   palette?: Palette;
 };

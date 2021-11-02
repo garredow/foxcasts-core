@@ -19,7 +19,7 @@ export function fromApiEpisode(source: ApiEpisode): Omit<Episode, 'id'> {
     chaptersUrl: source.chaptersUrl,
     transcriptUrl: source.transcriptUrl,
     playbackStatus: PlaybackStatus.Unplayed,
-    isDownloaded: false,
-    isFavorite: false,
+    isDownloaded: 0,
+    isFavorite: 0,
   };
 }

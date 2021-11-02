@@ -11,7 +11,7 @@ export type Podcast = {
   artworkUrl: string;
   categories: string[];
   lastUpdated?: string;
-  isFavorite: boolean;
+  isFavorite: 0 | 1;
   artwork?: string;
   accentColor?: string;
   palette?: Palette;

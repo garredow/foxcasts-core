@@ -19,6 +19,6 @@ export type Episode = {
   chapters?: Chapter[];
   transcriptUrl?: string;
   playbackStatus: PlaybackStatus;
-  isDownloaded: boolean;
-  isFavorite: boolean;
+  isDownloaded: 0 | 1;
+  isFavorite: 0 | 1;
 };
