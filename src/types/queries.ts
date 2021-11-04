@@ -23,6 +23,7 @@ export type EpisodeQuery = AtLeastOne<{
 }>;
 
 export type EpisodesQuery = {
+  episodeIds?: number[];
   afterDate?: string;
   beforeDate?: string;
   withinDays?: number;

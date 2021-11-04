@@ -15,6 +15,7 @@ import {
   PodcastQuery,
   PodcastsQuery,
 } from '../types';
+import { Playlist } from '../types/Playlist';
 import { fromApiEpisode } from '../utils/formatEpisode';
 
 class FoxcastsDB extends Dexie {
@@ -22,6 +23,7 @@ class FoxcastsDB extends Dexie {
   episodes: Dexie.Table<Episode, number>;
   artwork: Dexie.Table<Artwork, number>;
   filterLists: Dexie.Table<FilterList<unknown>, number>;
+  playlists: Dexie.Table<Playlist, number>;
 
   constructor(name: string) {
     super(name);
@@ -58,7 +60,8 @@ class FoxcastsDB extends Dexie {
         episodes:
           '++id, &podexId, &guid, podcastId, date, playbackStatus, duration, isFavorite, isDownloaded',
         artwork: '++id, podcastId, size, blur, greyscale',
-        filterLists: '++id',
+        filterLists: '++id, isFavorite',
+        playlists: '++id, isFavorite',
       })
       .upgrade((tx) => {
         tx.table<Podcast, number>('podcasts')
@@ -84,6 +87,7 @@ class FoxcastsDB extends Dexie {
     this.episodes = this.table('episodes');
     this.artwork = this.table('artwork');
     this.filterLists = this.table('filterLists');
+    this.playlists = this.table('playlists');
   }
 }
 
@@ -223,6 +227,7 @@ export class Database {
 
   public async getEpisodes({
     podcastIds,
+    episodeIds,
     afterDate,
     beforeDate,
     withinDays,
@@ -239,6 +244,8 @@ export class Database {
     // Try to put together the most efficient query depending on what we get
     if (podcastIds) {
       query = this.db.episodes.where('podcastId').anyOf(podcastIds);
+    } else if (Array.isArray(episodeIds)) {
+      query = this.db.episodes.where('id').anyOf(episodeIds);
     } else if (afterDate && beforeDate) {
       query = this.db.episodes.where('date').between(afterDate, beforeDate);
     } else if (afterDate) {
@@ -265,6 +272,10 @@ export class Database {
         .aboveOrEqual(sub(new Date(), { days: withinDays }).toISOString());
     } else {
       query = this.db.episodes.toCollection();
+    }
+
+    if (Array.isArray(episodeIds)) {
+      query = query.and((episode) => episodeIds.includes(episode.id));
     }
 
     if (afterDate !== undefined) {
@@ -370,6 +381,32 @@ export class Database {
   public async getFilterLists<T>(): Promise<FilterList<T>[]> {
     return this.db.filterLists.toArray() as Promise<FilterList<T>[]>;
   }
+
+  // Playlists
+
+  public async addPlaylist(list: Omit<Playlist, 'id'>): Promise<number> {
+    return this.db.playlists.add(list as Playlist);
+  }
+
+  public async updatePlaylist(
+    listId: number,
+    changes: Omit<Partial<Playlist>, 'id'>
+  ): Promise<number> {
+    return this.db.playlists.update(listId, changes);
+  }
+
+  public async deletePlaylists(listIds: number[]): Promise<void> {
+    return this.db.playlists.bulkDelete(listIds);
+  }
+
+  public async getPlaylist(id: number): Promise<Playlist | undefined> {
+    return this.db.playlists.get(id) as Promise<Playlist | undefined>;
+  }
+
+  public async getPlaylists(): Promise<Playlist[]> {
+    return this.db.playlists.toArray() as Promise<Playlist[]>;
+  }
+
   // Misc
 
   public async health() {
