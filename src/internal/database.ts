@@ -11,6 +11,8 @@ import {
   EpisodeQuery,
   EpisodesQuery,
   FilterList,
+  FilterQuery,
+  PlaylistQuery,
   Podcast,
   PodcastQuery,
   PodcastsQuery,
@@ -373,9 +375,9 @@ export class Database {
   }
 
   public async getFilterList<T>(
-    id: number
+    query: FilterQuery
   ): Promise<FilterList<T> | undefined> {
-    return this.db.filterLists.get(id) as Promise<FilterList<T> | undefined>;
+    return this.db.filterLists.get(query) as Promise<FilterList<T> | undefined>;
   }
 
   public async getFilterLists<T>(): Promise<FilterList<T>[]> {
@@ -399,8 +401,10 @@ export class Database {
     return this.db.playlists.bulkDelete(listIds);
   }
 
-  public async getPlaylist(id: number): Promise<Playlist | undefined> {
-    return this.db.playlists.get(id) as Promise<Playlist | undefined>;
+  public async getPlaylist(
+    query: PlaylistQuery
+  ): Promise<Playlist | undefined> {
+    return this.db.playlists.get(query) as Promise<Playlist | undefined>;
   }
 
   public async getPlaylists(): Promise<Playlist[]> {

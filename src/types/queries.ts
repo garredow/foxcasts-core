@@ -48,3 +48,19 @@ export type ArtworkQuery = AtLeastOne<{
 export type ArtworksQuery = {
   podcastIds: number[];
 };
+
+export type FilterQuery = AtLeastOne<{
+  id?: number;
+}>;
+
+export type FiltersQuery = {
+  ids: number[];
+};
+
+export type PlaylistQuery = AtLeastOne<{
+  id?: number;
+}>;
+
+export type PlaylistsQuery = {
+  ids: number[];
+};
