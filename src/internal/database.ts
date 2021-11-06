@@ -1,5 +1,6 @@
 import { sub } from 'date-fns';
 import Dexie, { Collection } from 'dexie';
+import 'dexie-observable';
 import { PlaybackStatus } from '../enums';
 import {
   ApiEpisode,
@@ -7,6 +8,9 @@ import {
   Artwork,
   ArtworkQuery,
   ArtworksQuery,
+  Download,
+  DownloadQuery,
+  DownloadsQuery,
   Episode,
   EpisodeQuery,
   EpisodesQuery,
@@ -20,12 +24,13 @@ import {
 import { Playlist } from '../types/Playlist';
 import { fromApiEpisode } from '../utils/formatEpisode';
 
-class FoxcastsDB extends Dexie {
+export class FoxcastsDB extends Dexie {
   podcasts: Dexie.Table<Podcast, number>;
   episodes: Dexie.Table<Episode, number>;
   artwork: Dexie.Table<Artwork, number>;
   filterLists: Dexie.Table<FilterList<unknown>, number>;
   playlists: Dexie.Table<Playlist, number>;
+  downloads: Dexie.Table<Download, number>;
 
   constructor(name: string) {
     super(name);
@@ -84,12 +89,22 @@ class FoxcastsDB extends Dexie {
                 : PlaybackStatus.Unplayed;
           });
       });
+    this.version(4).stores({
+      podcasts: '++id, &feedUrl, &podexId, itunesId, isFavorite',
+      episodes:
+        '++id, &podexId, &guid, podcastId, date, playbackStatus, duration, isFavorite, isDownloaded',
+      artwork: '++id, podcastId, size, blur, greyscale',
+      filterLists: '++id, isFavorite',
+      playlists: '++id, isFavorite',
+      downloads: '++id, &episodeId, status',
+    });
 
     this.podcasts = this.table('podcasts');
     this.episodes = this.table('episodes');
     this.artwork = this.table('artwork');
     this.filterLists = this.table('filterLists');
     this.playlists = this.table('playlists');
+    this.downloads = this.table('downloads');
   }
 }
 
@@ -409,6 +424,62 @@ export class Database {
 
   public async getPlaylists(): Promise<Playlist[]> {
     return this.db.playlists.toArray() as Promise<Playlist[]>;
+  }
+
+  // Downloads
+
+  public async addDownload(list: Omit<Download, 'id'>): Promise<number> {
+    return this.db.downloads.add(list as Download);
+  }
+
+  public async updateDownload(
+    id: number,
+    changes: Omit<Partial<Download>, 'id'>
+  ): Promise<number> {
+    return this.db.downloads.update(id, changes);
+  }
+
+  public async deleteDownloads(ids: number[]): Promise<void> {
+    return this.db.downloads.bulkDelete(ids);
+  }
+
+  public async getDownload(
+    query: DownloadQuery
+  ): Promise<Download | undefined> {
+    return this.db.downloads.get(query) as Promise<Download | undefined>;
+  }
+
+  public async getDownloads({
+    ids,
+    episodeIds,
+    statuses,
+    offset = 0,
+    limit = 50,
+  }: DownloadsQuery): Promise<Download[]> {
+    let query: Collection<Download, number>;
+
+    if (ids !== undefined) {
+      query = this.db.downloads.where('id').anyOf(ids);
+    } else if (episodeIds !== undefined) {
+      query = this.db.downloads.where('episodeId').anyOf(episodeIds);
+    } else if (statuses !== undefined) {
+      query = this.db.downloads.where('status').anyOf(statuses);
+    } else {
+      query = this.db.downloads.toCollection();
+    }
+
+    if (episodeIds !== undefined) {
+      query.and((a) => episodeIds.includes(a.episodeId));
+    }
+
+    if (statuses !== undefined) {
+      query.and((a) => statuses.includes(a.status));
+    }
+
+    return await query
+      .reverse()
+      .sortBy('dateUpdated')
+      .then((res) => res.slice(offset, offset + limit));
   }
 
   // Misc

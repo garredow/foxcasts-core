@@ -1,4 +1,5 @@
 import { Artworks } from './artworks';
+import { Downloads } from './downloads';
 import { Episodes } from './episodes';
 import { Filters } from './filters';
 import { Api } from './internal/api';
@@ -25,6 +26,7 @@ export class FoxcastsCore {
   public playlists: Playlists;
   public podcastIndex: PodcastIndex;
   public podcasts: Podcasts;
+  public downloads: Downloads;
 
   constructor(options: Partial<CoreConfig>) {
     const config = {
@@ -44,5 +46,6 @@ export class FoxcastsCore {
     this.playlists = new Playlists(api, database);
     this.podcastIndex = new PodcastIndex(api, database);
     this.podcasts = new Podcasts(api, database);
+    this.downloads = new Downloads(api, database);
   }
 }

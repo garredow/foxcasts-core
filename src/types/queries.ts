@@ -1,3 +1,4 @@
+import { DownloadStatus } from '.';
 import { PlaybackStatus } from '../enums';
 
 type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
@@ -63,4 +64,18 @@ export type PlaylistQuery = AtLeastOne<{
 
 export type PlaylistsQuery = {
   ids: number[];
+};
+
+export type DownloadQuery = AtLeastOne<{
+  id?: number;
+  episodeId?: number;
+  status?: DownloadStatus;
+}>;
+
+export type DownloadsQuery = {
+  ids?: number[];
+  episodeIds?: number[];
+  statuses?: DownloadStatus[];
+  offset?: number;
+  limit?: number;
 };
