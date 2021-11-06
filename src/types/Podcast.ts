@@ -1,7 +1,6 @@
-import { Palette } from '.';
+import { DatabaseItem, Palette } from '.';
 
-export type Podcast = {
-  id: number;
+export type Podcast = DatabaseItem & {
   podexId: number | null;
   itunesId: number | null;
   title: string;

@@ -3,6 +3,7 @@ import { Database } from './internal/database';
 import {
   ApiEpisode,
   Chapter,
+  DbReadOnly,
   Episode,
   EpisodeExtended,
   EpisodeQuery,
@@ -63,7 +64,10 @@ export class Episodes {
     }));
   }
 
-  public update(episodeId: number, data: Partial<Episode>): Promise<number> {
+  public update(
+    episodeId: number,
+    data: Omit<Partial<Episode>, DbReadOnly>
+  ): Promise<number> {
     return this.database.updateEpisode(episodeId, data);
   }
 

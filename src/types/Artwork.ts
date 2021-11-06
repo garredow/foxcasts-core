@@ -1,9 +1,8 @@
-import { Palette } from '.';
+import { DatabaseItem, Palette } from '.';
 
 export type ArtworkStyle = 'normal' | 'blurred' | 'greyscale';
 
-export type Artwork = {
-  id: number;
+export type Artwork = DatabaseItem & {
   podcastId: number;
   image: string;
   size: number;

@@ -1,7 +1,7 @@
 import { PlaybackStatus } from '../enums';
-import { ApiEpisode, Episode } from '../types';
+import { ApiEpisode, DbReadOnly, Episode } from '../types';
 
-export function fromApiEpisode(source: ApiEpisode): Omit<Episode, 'id'> {
+export function fromApiEpisode(source: ApiEpisode): Omit<Episode, DbReadOnly> {
   return {
     podexId: source.podexId || null,
     guid: source.guid,

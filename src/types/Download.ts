@@ -1,3 +1,5 @@
+import { DatabaseItem } from '.';
+
 export enum DownloadStatus {
   Queued = 'queued',
   Downloading = 'downloading',
@@ -6,8 +8,7 @@ export enum DownloadStatus {
   Cancelled = 'cacelled',
 }
 
-export type Download = {
-  id: number;
+export type Download = DatabaseItem & {
   episodeId: number;
   episodeTitle: string;
   podcastTitle: string;

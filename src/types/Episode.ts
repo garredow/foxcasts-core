@@ -1,8 +1,8 @@
+import { DatabaseItem } from '.';
 import { PlaybackStatus } from '../enums';
 import { Chapter } from './Chapter';
 
-export type Episode = {
-  id: number;
+export type Episode = DatabaseItem & {
   podexId: number | null;
   guid: string;
   podcastId: number;

@@ -37,7 +37,7 @@ export class FoxcastsCore {
     };
 
     const api = new Api(config);
-    const database = new Database(config);
+    const database = new Database(config.dbName);
 
     this.artworks = new Artworks(api, database);
     this.episodes = new Episodes(api, database);

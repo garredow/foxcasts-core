@@ -2,6 +2,7 @@ import { Episodes } from './episodes';
 import { Api } from './internal/api';
 import { Database } from './internal/database';
 import {
+  DbReadOnly,
   EpisodeExtended,
   Playlist,
   PlaylistExtended,
@@ -18,13 +19,13 @@ export class Playlists {
     this.database = database;
   }
 
-  public async add(list: Omit<Playlist, 'id'>): Promise<number> {
+  public async add(list: Omit<Playlist, DbReadOnly>): Promise<number> {
     return this.database.addPlaylist(list);
   }
 
   public async update(
     listId: number,
-    changes: Omit<Partial<Playlist>, 'id'>
+    changes: Omit<Partial<Playlist>, DbReadOnly>
   ): Promise<number> {
     return this.database.updatePlaylist(listId, changes);
   }
