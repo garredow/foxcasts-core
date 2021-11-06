@@ -1,3 +1,12 @@
+# [2.1.0](https://github.com/garredow/foxcasts-core/compare/v2.0.0...v2.1.0) (2021-11-06)
+
+
+### Features
+
+* **getplaylist:** add option to populate episodes ([e3c4595](https://github.com/garredow/foxcasts-core/commit/e3c459505e4938daa136a0c0a8b979f349e6c912))
+* add playlists ([41c2eaa](https://github.com/garredow/foxcasts-core/commit/41c2eaa9fd8b4e071b66dac08c7b93dfc032fe90))
+* use es2015 modules ([3344f73](https://github.com/garredow/foxcasts-core/commit/3344f73a219fed4f68afe32481c984a25f819962))
+
 # [2.0.0](https://github.com/garredow/foxcasts-core/compare/v1.5.0...v2.0.0) (2021-11-02)
 
 
