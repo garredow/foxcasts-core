@@ -16,6 +16,7 @@ import {
   Health,
   PIStats,
   Playlist,
+  PlaylistExtended,
   Podcast,
   PodcastQuery,
   PodcastsQuery,
@@ -296,8 +297,32 @@ export class FoxcastsCore {
     return this.database.deletePlaylists(listIds);
   }
 
-  public async getPlaylist(id: number): Promise<Playlist | undefined> {
-    return this.database.getPlaylist(id);
+  public async getPlaylist(
+    id: number,
+    populateEpisodes = false
+  ): Promise<PlaylistExtended | undefined> {
+    const playlist = await this.database.getPlaylist(id);
+    if (!playlist) return;
+
+    const result: PlaylistExtended = {
+      ...playlist,
+      episodes: [],
+    };
+
+    if (playlist && populateEpisodes) {
+      const episodeMap = await this.getEpisodes({
+        episodeIds: playlist.episodeIds,
+      }).then((res) =>
+        res.reduce((acc, episode) => {
+          acc[episode.id] = episode;
+          return acc;
+        }, {} as { [key: number]: EpisodeExtended })
+      );
+
+      result.episodes = playlist.episodeIds.map((id) => episodeMap[id]);
+    }
+
+    return result;
   }
 
   public async getPlaylists(): Promise<Playlist[]> {

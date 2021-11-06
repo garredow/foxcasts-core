@@ -15,6 +15,7 @@ export * from './PageOptions';
 export * from './Palette';
 export * from './PIStats';
 export * from './Playlist';
+export * from './PlaylistExtended';
 export * from './Podcast';
 export * from './PodcastExtended';
 export * from './queries';
