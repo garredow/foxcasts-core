@@ -1,3 +1,19 @@
+# [3.0.0](https://github.com/garredow/foxcasts-core/compare/v2.1.0...v3.0.0) (2021-11-10)
+
+
+### Features
+
+* return new episode ids when checking for updates ([8fe1329](https://github.com/garredow/foxcasts-core/commit/8fe1329780fb0aa7c6ee6b547ae50503945f8a4b))
+* **database:** add new fields ([f0fe8fa](https://github.com/garredow/foxcasts-core/commit/f0fe8fa22e3ddbaa8f1308f18bb93b79b4976751))
+* add downloads module ([aac4b4f](https://github.com/garredow/foxcasts-core/commit/aac4b4f06188b045f6fb97bb39d2e56d6df4e169))
+* refactor into modules ([62bf466](https://github.com/garredow/foxcasts-core/commit/62bf46685f3f091c4481054d0a7cf8660ba137cf))
+
+
+### BREAKING CHANGES
+
+* **database:** add new required fields
+* completely changed api
+
 # [2.1.0](https://github.com/garredow/foxcasts-core/compare/v2.0.0...v2.1.0) (2021-11-06)
 
 
