@@ -397,6 +397,7 @@ export class Database extends Dexie {
   }
 
   public async getArtwork(query: ArtworkQuery): Promise<Artwork | undefined> {
+    delete query.greyscale;
     return this.artwork.get(query);
   }
 

@@ -1,4 +1,4 @@
 export type UpdateResult = {
-  podcasts: number;
-  episodes: number;
+  podcastIds: number[];
+  episodeIds: number[];
 };

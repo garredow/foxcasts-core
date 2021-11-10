@@ -19,7 +19,10 @@ export class Podcasts {
     this.database = database;
   }
 
-  public async subscribe(query: PodcastQuery): Promise<number> {
+  public async subscribe(
+    query: PodcastQuery,
+    episodesCount = 50
+  ): Promise<number> {
     const exising = await this.database.getPodcast(query);
     if (exising) {
       console.log(`Already subscribed to ${query}`);
@@ -27,7 +30,11 @@ export class Podcasts {
     }
 
     const podcast = await this.api.getPodcast(query.podexId, query.feedUrl);
-    const episodes = await this.api.getEpisodes(query.podexId, query.feedUrl);
+    const episodes = await this.api.getEpisodes(
+      query.podexId,
+      query.feedUrl,
+      episodesCount
+    );
 
     const podcastId = await this.database.addPodcast(podcast);
     await this.database.addEpisodes(podcastId, episodes);
@@ -75,10 +82,12 @@ export class Podcasts {
 
   public async checkForUpdates(): Promise<UpdateResult> {
     const podcastIds = (await this.database.getPodcasts({})).map((o) => o.id);
-    const count = {
-      podcasts: 0,
-      episodes: 0,
+
+    const result: UpdateResult = {
+      podcastIds: [],
+      episodeIds: [],
     };
+
     for (const podcastId of podcastIds) {
       const podcast = await this.database.getPodcast({ id: podcastId });
       if (!podcast) continue;
@@ -101,11 +110,16 @@ export class Podcasts {
       if (newEpisodes.length === 0) {
         continue;
       }
-      await this.database.addEpisodes(podcastId, newEpisodes);
-      count.podcasts += 1;
-      count.episodes += newEpisodes.length;
+
+      result.podcastIds.push(podcast.id);
+      for (const newEpisode of newEpisodes) {
+        const id = await this.database.addEpisode(podcastId, newEpisode);
+        if (id) {
+          result.episodeIds.push(id);
+        }
+      }
     }
-    return count;
+    return result;
   }
 
   public search(query: string): Promise<SearchResult[]> {
