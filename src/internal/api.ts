@@ -22,10 +22,7 @@ export class Api {
     this.config = config;
   }
 
-  private fetch<T>(
-    path: string,
-    responseType: 'json' | 'text' | 'blob' = 'json'
-  ): Promise<T> {
+  private fetch<T>(path: string, responseType: 'json' | 'text' | 'blob' = 'json'): Promise<T> {
     const fullUrl =
       process.env.NODE_ENV === 'development'
         ? `http://localhost:8100/${this.config.baseUrl}${path}`
@@ -53,9 +50,7 @@ export class Api {
           resolve(xhr.response);
         }
       });
-      xhr.addEventListener('error', () =>
-        reject({ message: `Failed to GET ${path}` })
-      );
+      xhr.addEventListener('error', () => reject({ message: `Failed to GET ${path}` }));
 
       xhr.open('GET', fullUrl, true);
       if (this.config.apiKey) {
@@ -73,10 +68,7 @@ export class Api {
     });
   }
 
-  public getTrendingPodcasts(
-    since: number,
-    categories?: number[]
-  ): Promise<ApiPodcast[]> {
+  public getTrendingPodcasts(since: number, categories?: number[]): Promise<ApiPodcast[]> {
     let url = `podcasts/trending?since=${since}`;
 
     if (categories && categories.length > 0) {
@@ -89,10 +81,7 @@ export class Api {
     });
   }
 
-  public getPodcast(
-    id?: number | null,
-    feedUrl?: string | null
-  ): Promise<ApiPodcast> {
+  public getPodcast(id?: number | null, feedUrl?: string | null): Promise<ApiPodcast> {
     if (!id && !feedUrl) {
       throw new Error('Must provide an id or feedUrl');
     }
@@ -141,10 +130,7 @@ export class Api {
     });
   }
 
-  public getChapters(
-    episodeId?: number | null,
-    fileUrl?: string | null
-  ): Promise<Chapter[]> {
+  public getChapters(episodeId?: number | null, fileUrl?: string | null): Promise<Chapter[]> {
     if (!episodeId && !fileUrl) {
       throw new Error('Must provide an episodeId or fileUrl');
     }
@@ -190,9 +176,7 @@ export class Api {
     blur?: number,
     greyscale?: boolean
   ): Promise<Palette & { imageData: string }> {
-    let url = `artworkWithPalette?imageUrl=${encodeURIComponent(
-      imageUrl
-    )}&size=${size}`;
+    let url = `artworkWithPalette?imageUrl=${encodeURIComponent(imageUrl)}&size=${size}`;
     if (blur) {
       url += `&blur=${blur}`;
     }
@@ -235,9 +219,7 @@ export class Api {
   }
 
   public async health() {
-    const authenticated = await this.fetch<SearchResult[]>(
-      'podcasts/search?query=syntax'
-    )
+    const authenticated = await this.fetch<SearchResult[]>('podcasts/search?query=syntax')
       .then(() => true)
       .catch((err) => (err.statusCode === 401 ? false : undefined));
     const health = await this.getHealth().catch(() => null);

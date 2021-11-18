@@ -5,11 +5,10 @@ import { Filters } from './filters';
 import { Api } from './internal/api';
 import { Database } from './internal/database';
 import { Meta } from './meta';
+import pkg from './pkg.json';
 import { Playlists } from './playlists';
 import { PodcastIndex } from './podcastIndex';
 import { Podcasts } from './podcasts';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pkg = require('../package.json');
 
 export type CoreConfig = {
   baseUrl: string;

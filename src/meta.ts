@@ -1,9 +1,8 @@
 import { CoreConfig } from '.';
 import { Api } from './internal/api';
 import { Database } from './internal/database';
+import pkg from './pkg.json';
 import { Health } from './types';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pkg = require('../package.json');
 
 export class Meta {
   private config: CoreConfig;
@@ -21,9 +20,7 @@ export class Meta {
     const database = await this.database.health();
 
     return {
-      healthy: [api.healthy, api.authenticated, database.healthy].every(
-        (a) => a === true
-      ),
+      healthy: [api.healthy, api.authenticated, database.healthy].every((a) => a === true),
       version: pkg.version,
       api,
       database,

@@ -14,7 +14,9 @@
     "test": "jest tests",
     "test:coverage": "jest tests --coverage",
     "test:ci": "jest tests --coverage --ci --runInBand --reporters=default --reporters=jest-junit",
-    "commit": "cz"
+    "commit": "cz",
+    "postbuild": "cp package.json ./lib/pkg.json",
+    "postversion": "cp package.json ./lib/pkg.json"
   },
   "repository": {
     "type": "git",
