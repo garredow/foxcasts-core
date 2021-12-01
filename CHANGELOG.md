@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/garredow/foxcasts-core/compare/v3.0.0...v3.1.0) (2021-11-18)
+
+
+### Features
+
+* remove uses of require ([a7fde63](https://github.com/garredow/foxcasts-core/commit/a7fde63217d1a15245d7e0c0aaa91287c7d7009d))
+
 # [3.0.0](https://github.com/garredow/foxcasts-core/compare/v2.1.0...v3.0.0) (2021-11-10)
 
 
