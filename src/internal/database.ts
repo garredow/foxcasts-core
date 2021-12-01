@@ -111,10 +111,7 @@ export class Database extends Dexie {
 
   // Events
 
-  public onChange<T>(
-    table: CoreModule,
-    callbackFn: (change: DbChangeEvent<T>) => void
-  ): void {
+  public onChange<T>(table: CoreModule, callbackFn: (change: DbChangeEvent<T>) => void): void {
     this.on('changes', (changes) => {
       changes.forEach((change) => {
         if (change.table !== table) return;
@@ -157,10 +154,11 @@ export class Database extends Dexie {
       feedUrl: podcast.feedUrl,
       artworkUrl: podcast.artworkUrl,
       categories: podcast.categories,
+      imageUrlHash: podcast.imageUrlHash,
       isFavorite: 0,
       dateAdded: new Date().toISOString(),
       dateUpdated: new Date().toISOString(),
-    } as Podcast);
+    } as unknown as Podcast);
   }
 
   public async updatePodcast(
@@ -203,25 +201,18 @@ export class Database extends Dexie {
       query.and((podcast) => podcast.isFavorite === isFavorite);
     }
 
-    return await query
-      .sortBy('title')
-      .then((res) => res.slice(offset, offset + limit));
+    return await query.sortBy('title').then((res) => res.slice(offset, offset + limit));
   }
 
   // Episodes
 
-  public async addEpisode(
-    podcastId: number,
-    episode: ApiEpisode
-  ): Promise<number | void> {
+  public async addEpisode(podcastId: number, episode: ApiEpisode): Promise<number | void> {
     const existingEpisode = await this.getEpisode({
       podexId: episode.podexId,
       guid: episode.guid,
     });
     if (existingEpisode) {
-      console.log(
-        `Episode ${episode.guid} (${episode.title}) already exists in database.`
-      );
+      console.log(`Episode ${episode.guid} (${episode.title}) already exists in database.`);
       return;
     }
     return this.episodes.add({
@@ -232,10 +223,7 @@ export class Database extends Dexie {
     } as Episode);
   }
 
-  public async addEpisodes(
-    podcastId: number,
-    episodes: ApiEpisode[]
-  ): Promise<void> {
+  public async addEpisodes(podcastId: number, episodes: ApiEpisode[]): Promise<void> {
     for (const episode of episodes) {
       await this.addEpisode(podcastId, episode);
     }
@@ -259,9 +247,7 @@ export class Database extends Dexie {
     });
   }
 
-  public async getEpisode(
-    episodeKey: EpisodeQuery
-  ): Promise<Episode | undefined> {
+  public async getEpisode(episodeKey: EpisodeQuery): Promise<Episode | undefined> {
     const query =
       episodeKey.id !== undefined
         ? { id: episodeKey.id }
@@ -302,9 +288,7 @@ export class Database extends Dexie {
     } else if (playbackStatuses) {
       query = this.episodes.where('playbackStatus').anyOf(playbackStatuses);
     } else if (shorterThan !== undefined && longerThan !== undefined) {
-      query = this.episodes
-        .where('duration')
-        .between(longerThan, shorterThan, true, false);
+      query = this.episodes.where('duration').between(longerThan, shorterThan, true, false);
     } else if (longerThan !== undefined) {
       query = this.episodes.where('duration').aboveOrEqual(longerThan);
     } else if (shorterThan !== undefined) {
@@ -334,9 +318,7 @@ export class Database extends Dexie {
     }
 
     if (playbackStatuses !== undefined) {
-      query = query.and((episode) =>
-        playbackStatuses.includes(episode.playbackStatus)
-      );
+      query = query.and((episode) => playbackStatuses.includes(episode.playbackStatus));
     }
 
     if (isDownloaded !== undefined) {
@@ -357,8 +339,7 @@ export class Database extends Dexie {
 
     if (withinDays !== undefined) {
       query = query.and(
-        (episode) =>
-          episode.date > sub(new Date(), { days: withinDays }).toISOString()
+        (episode) => episode.date > sub(new Date(), { days: withinDays }).toISOString()
       );
     }
 
@@ -407,9 +388,7 @@ export class Database extends Dexie {
 
   // Filter Lists
 
-  public async addFilter<T>(
-    item: Omit<FilterList<T>, DbReadOnly>
-  ): Promise<number> {
+  public async addFilter<T>(item: Omit<FilterList<T>, DbReadOnly>): Promise<number> {
     return this.filters.add({
       ...item,
       dateAdded: new Date().toISOString(),
@@ -431,9 +410,7 @@ export class Database extends Dexie {
     return this.filters.bulkDelete(listIds);
   }
 
-  public async getFilter<T>(
-    query: FilterQuery
-  ): Promise<FilterList<T> | undefined> {
+  public async getFilter<T>(query: FilterQuery): Promise<FilterList<T> | undefined> {
     return this.filters.get(query) as Promise<FilterList<T> | undefined>;
   }
 
@@ -465,9 +442,7 @@ export class Database extends Dexie {
     return this.playlists.bulkDelete(listIds);
   }
 
-  public async getPlaylist(
-    query: PlaylistQuery
-  ): Promise<Playlist | undefined> {
+  public async getPlaylist(query: PlaylistQuery): Promise<Playlist | undefined> {
     return this.playlists.get(query) as Promise<Playlist | undefined>;
   }
 
@@ -503,9 +478,7 @@ export class Database extends Dexie {
     return this.downloads.clear();
   }
 
-  public async getDownload(
-    query: DownloadQuery
-  ): Promise<Download | undefined> {
+  public async getDownload(query: DownloadQuery): Promise<Download | undefined> {
     return this.downloads.get(query) as Promise<Download | undefined>;
   }
 

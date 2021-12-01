@@ -8,8 +8,10 @@ export type Podcast = DatabaseItem & {
   description?: string;
   feedUrl: string;
   artworkUrl: string;
-  categories: string[];
+  categories: number[];
   lastUpdated?: string;
+  trendScore?: number;
+  imageUrlHash?: number;
   isFavorite: 0 | 1;
   artwork?: string;
   accentColor?: string;

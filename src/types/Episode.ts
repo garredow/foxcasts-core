@@ -1,4 +1,4 @@
-import { DatabaseItem } from '.';
+import { DatabaseItem, Soundbite } from '.';
 import { PlaybackStatus } from '../enums';
 import { Chapter } from './Chapter';
 
@@ -18,6 +18,12 @@ export type Episode = DatabaseItem & {
   chaptersUrl?: string;
   chapters?: Chapter[];
   transcriptUrl?: string;
+  season?: number;
+  episode?: number;
+  episodeType?: 'full' | 'trailer' | 'bonus';
+  soundbite?: Soundbite;
+  soundbites?: Soundbite[];
+  imageUrl?: string;
   playbackStatus: PlaybackStatus;
   isDownloaded: 0 | 1;
   isFavorite: 0 | 1;

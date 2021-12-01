@@ -9,4 +9,5 @@ export type ApiPodcast = {
   lastUpdated?: number;
   categories: string[];
   trendScore?: number;
+  imageUrlHash?: number;
 };

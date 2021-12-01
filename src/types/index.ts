@@ -21,4 +21,5 @@ export * from './Podcast';
 export * from './PodcastExtended';
 export * from './queries';
 export * from './SearchResult';
+export * from './Soundbite';
 export * from './UpdateResult';
