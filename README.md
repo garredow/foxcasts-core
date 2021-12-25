@@ -1,6 +1,7 @@
 # Foxcasts Core
 
 [![CircleCI](https://circleci.com/gh/garredow/foxcasts-core/tree/main.svg?style=svg)](https://circleci.com/gh/garredow/foxcasts-core/tree/main)
+[![npm](https://img.shields.io/npm/v/foxcasts-core.svg)](https://www.npmjs.com/package/foxcasts-core)
 
 ## What is it?
 
